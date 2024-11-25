@@ -377,7 +377,7 @@ for epoch in range(num_epochs):
   print("Epoch: {}, Loss: {}".format(epoch, avg_loss))
   if avg_loss < best_loss:
     best_loss = avg_loss
-    torch.save(model.state_dict(), '{}/output/{}_{}_segmentation_model.pth'.format(BASE_DIR, epoch,round(best_loss, 4)))
+    torch.save(model.state_dict(), '{}/output/{}_{}_segmentation_model.pth'.format(BASE_DIR, epoch,np.round(best_loss, 4)))
   else:
       loss_ctr +=1
       if loss_ctr > 2:
