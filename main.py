@@ -32,7 +32,10 @@ from detectron2.utils.visualizer import Visualizer
 from detectron2.data import build_detection_test_loader
 from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
+import warnings
 
+
+warnings.filterwarnings("ignore")
 
 
 BASE_DIR = '/localscratch/gna23/p4/CMPT_CV_lab4/'
