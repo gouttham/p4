@@ -407,5 +407,6 @@ for (img, mask) in tqdm(loader):
             cur_mask = np.array(mask[i].cpu())[0]
 
             ctr += 1
+            print(iou(cur_mask, cur_pred))
             global_iou += iou(cur_mask, cur_pred)
 print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou/ctr))
