@@ -372,9 +372,9 @@ class MyModel(nn.Module):
 
 batch_size = 8
 model = MyModel().cuda()
-model.load_state_dict(torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR)))
+# model.load_state_dict(torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR)))
 model = model.eval() # chaning the model to evaluation mode will fix the bachnorm layers
-loader, dataset = get_plane_dataset('train', batch_size)
+loader, dataset = get_plane_dataset('validation', batch_size)
 
 
 def sigmoid(x):
