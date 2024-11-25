@@ -183,14 +183,14 @@ class PlaneDataset(Dataset):
             img = cv2.flip(img,0)
             mask = cv2.flip(mask,0)
         if random.random() > 0.3:
-          brightness = random.uniform(0.8, 1.2)
-          img = np.clip(img * brightness, 0, 255).astype(np.uint8)
+            brightness = random.uniform(0.8, 1.2)
+            img = np.clip(img * brightness, 0, 255).astype(np.uint8)
         if random.random() > 0.5:
-          angle = random.uniform(-30, 30)
-          h, w = img.shape[:2]
-          rotation_matrix = cv2.getRotationMatrix2D((w / 2, h / 2), angle, 1)
-          img = cv2.warpAffine(img, rotation_matrix, (w, h), flags=cv2.INTER_LINEAR)
-          mask = cv2.warpAffine(mask, rotation_matrix, (w, h), flags=cv2.INTER_NEAREST)
+            angle = random.uniform(-30, 30)
+            h, w = img.shape[:2]
+            rotation_matrix = cv2.getRotationMatrix2D((w / 2, h / 2), angle, 1)
+            img = cv2.warpAffine(img, rotation_matrix, (w, h), flags=cv2.INTER_LINEAR)
+            mask = cv2.warpAffine(mask, rotation_matrix, (w, h), flags=cv2.INTER_NEAREST)
 
         img = self.transforms(img)
         mask = self.transforms(mask)
