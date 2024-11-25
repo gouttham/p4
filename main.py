@@ -192,9 +192,8 @@ class PlaneDataset(Dataset):
                 rotation_matrix = cv2.getRotationMatrix2D((w / 2, h / 2), angle, 1)
                 img = cv2.warpAffine(img, rotation_matrix, (w, h), flags=cv2.INTER_LINEAR)
                 mask = cv2.warpAffine(mask, rotation_matrix, (w, h), flags=cv2.INTER_NEAREST)
-        else:
-            img = self.tran(img)
-            mask = self.tran(mask)
+        img = self.tran(img)
+        mask = self.tran(mask)
     img = torch.tensor(img, dtype=torch.float)
     mask = torch.tensor(mask, dtype=torch.float)
     return img, mask
