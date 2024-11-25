@@ -334,35 +334,78 @@ class MyModel(nn.Module):
 # TODO: approx ? lines
 '''
 
-# Set the hyperparameters
-num_epochs = 50
-batch_size = 16
-learning_rate = 1e-3
-weight_decay = 1e-5
+# Training
+# # Set the hyperparameters
+# num_epochs = 50
+# batch_size = 16
+# learning_rate = 1e-3
+# weight_decay = 1e-5
+#
+# model = MyModel() # initialize the model
+# model = model.cuda() # move the model to GPU
+# loader, _ = get_plane_dataset('train', batch_size) # initialize data_loader
+# crit = nn.BCEWithLogitsLoss() # Define the loss function
+# optim = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay) # Initialize the optimizer as SGD
+#
+# # start the training procedure
+# for epoch in range(num_epochs):
+#   total_loss = 0
+#   for (img, mask) in tqdm(loader):
+#     img = torch.tensor(img, device=torch.device('cuda'), requires_grad = True)
+#     mask = torch.tensor(mask, device=torch.device('cuda'), requires_grad = True)
+#     pred = model(img)
+#     loss = crit(pred, mask)
+#     optim.zero_grad()
+#     loss.backward()
+#     optim.step()
+#     total_loss += loss.cpu().data
+#   print("Epoch: {}, Loss: {}".format(epoch, total_loss/len(loader)))
+#   torch.save(model.state_dict(), '{}/output/{}_segmentation_model.pth'.format(BASE_DIR, epoch))
+#
+# '''
+# # Saving the final model
+# '''
+# torch.save(model.state_dict(), '{}/output/final_segmentation_model.pth'.format(BASE_DIR))
 
-model = MyModel() # initialize the model
-model = model.cuda() # move the model to GPU
-loader, _ = get_plane_dataset('train', batch_size) # initialize data_loader
-crit = nn.BCEWithLogitsLoss() # Define the loss function
-optim = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay) # Initialize the optimizer as SGD
 
-# start the training procedure
-for epoch in range(num_epochs):
-  total_loss = 0
-  for (img, mask) in tqdm(loader):
-    img = torch.tensor(img, device=torch.device('cuda'), requires_grad = True)
-    mask = torch.tensor(mask, device=torch.device('cuda'), requires_grad = True)
-    pred = model(img)
-    loss = crit(pred, mask)
-    optim.zero_grad()
-    loss.backward()
-    optim.step()
-    total_loss += loss.cpu().data
-  print("Epoch: {}, Loss: {}".format(epoch, total_loss/len(loader)))
-  torch.save(model.state_dict(), '{}/output/{}_segmentation_model.pth'.format(BASE_DIR, epoch))
+# eval
 
-'''
-# Saving the final model
-'''
-torch.save(model.state_dict(), '{}/output/final_segmentation_model.pth'.format(BASE_DIR))
+batch_size = 8
+model = MyModel().cuda()
+model.load_state_dict(torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR)))
+model = model.eval() # chaning the model to evaluation mode will fix the bachnorm layers
+loader, dataset = get_plane_dataset('validation', batch_size)
 
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+def iou(gt, pd):
+    gt = sigmoid(gt)
+    pd = sigmoid(pd)
+    intersection = np.count_nonzero(np.multiply(gt, pd))
+    union = np.count_nonzero(gt + pd)
+    if union != 0:
+        return intersection / union
+    else:
+        return 0
+
+
+total_iou = 0
+
+ctr = 0
+global_iou = 0
+for (img, mask) in tqdm(loader):
+    with torch.no_grad():
+        img = img.cuda()
+        mask = mask.cuda()
+        mask = torch.unsqueeze(mask, 1).detach()
+        pred = model(img).cpu().detach()
+        for i in range(img.shape[0]):
+            cur_pred = np.array(pred[i].cpu())[0]
+            cur_mask = np.array(mask[i].cpu())[0]
+
+            ctr += 1
+            global_iou += iou(cur_mask, cur_pred)
+print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou/ctr))
