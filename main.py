@@ -154,6 +154,7 @@ class PlaneDataset(Dataset):
   def __init__(self, set_name, data_list):
 
       self.tran = transforms.Compose([
+          transforms.ToPILImage(),
           transforms.ToTensor(), # Converting the image to tensor and change the image format (Channels-Last => Channels-First)
       ])
 
