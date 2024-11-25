@@ -176,22 +176,23 @@ class PlaneDataset(Dataset):
 
   def numpy_to_tensor(self, img, mask):
     if self.tran is not None:
-        if self.set_name == "train" or self.set_name == "validation" :
-            if random.random() > 0.5:
-                img = cv2.flip(img,1)
-                mask = cv2.flip(mask,1)
-            if random.random() > 0.5:
-                img = cv2.flip(img,0)
-                mask = cv2.flip(mask,0)
-            if random.random() > 0.3:
-                brightness = random.uniform(0.8, 1.2)
-                img = np.clip(img * brightness, 0, 255).astype(np.uint8)
-            if random.random() > 0.5:
-                angle = random.uniform(-30, 30)
-                h, w = img.shape[:2]
-                rotation_matrix = cv2.getRotationMatrix2D((w / 2, h / 2), angle, 1)
-                img = cv2.warpAffine(img, rotation_matrix, (w, h), flags=cv2.INTER_LINEAR)
-                mask = cv2.warpAffine(mask, rotation_matrix, (w, h), flags=cv2.INTER_NEAREST)
+        if self.set_name == "train":
+            if random.random() > 0.35:  # Augment only 35% of the training data
+                if random.random() > 0.5:
+                    img = cv2.flip(img, 1)
+                    mask = cv2.flip(mask, 1)
+                if random.random() > 0.5:
+                    img = cv2.flip(img, 0)
+                    mask = cv2.flip(mask, 0)
+                if random.random() > 0.3:
+                    brightness = random.uniform(0.8, 1.2)
+                    img = np.clip(img * brightness, 0, 255).astype(np.uint8)
+                if random.random() > 0.5:
+                    angle = random.uniform(-30, 30)
+                    h, w = img.shape[:2]
+                    rotation_matrix = cv2.getRotationMatrix2D((w / 2, h / 2), angle, 1)
+                    img = cv2.warpAffine(img, rotation_matrix, (w, h), flags=cv2.INTER_LINEAR)
+                    mask = cv2.warpAffine(mask, rotation_matrix, (w, h), flags=cv2.INTER_NEAREST)
         img = self.tran(img)
         mask = self.tran(mask)
     img = torch.tensor(img, dtype=torch.float)
