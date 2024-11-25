@@ -149,13 +149,11 @@ def get_instance_sample(data, idx, img=None):
 # You may also need to add data augmentation or normalization in here
 '''
 
-import torchvision.transforms.functional as F
-
 
 class PlaneDataset(Dataset):
   def __init__(self, set_name, data_list):
 
-      self.transforms = transforms.Compose([
+      self.tran = transforms.Compose([
           transforms.ToTensor(), # Converting the image to tensor and change the image format (Channels-Last => Channels-First)
       ])
 
@@ -192,8 +190,8 @@ class PlaneDataset(Dataset):
             img = cv2.warpAffine(img, rotation_matrix, (w, h), flags=cv2.INTER_LINEAR)
             mask = cv2.warpAffine(mask, rotation_matrix, (w, h), flags=cv2.INTER_NEAREST)
 
-        img = self.transforms(img)
-        mask = self.transforms(mask)
+        img = self.tran(img)
+        mask = self.tran(mask)
     img = torch.tensor(img, dtype=torch.float)
     mask = torch.tensor(mask, dtype=torch.float)
     return img, mask
