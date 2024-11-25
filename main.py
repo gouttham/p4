@@ -176,7 +176,7 @@ class PlaneDataset(Dataset):
 
   def numpy_to_tensor(self, img, mask):
     if self.tran is not None:
-        if self.set_name == "train":
+        if self.set_name == "train" || self.set_name == "validation" :
             if random.random() > 0.5:
                 img = cv2.flip(img,1)
                 mask = cv2.flip(mask,1)
