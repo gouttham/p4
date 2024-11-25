@@ -1,5 +1,4 @@
 # import some common libraries
-from google.colab.patches import cv2_imshow
 from sklearn.metrics import jaccard_score
 from PIL import Image, ImageDraw
 from tqdm.notebook import tqdm
