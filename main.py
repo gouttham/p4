@@ -35,7 +35,7 @@ from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 
 
 
-BASE_DIR = '/localscratch/gna23/p4'
+BASE_DIR = '/localscratch/gna23/p4/CMPT_CV_lab4/'
 
 
 
