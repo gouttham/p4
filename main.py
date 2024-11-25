@@ -216,7 +216,7 @@ class PlaneDataset(Dataset):
 def get_plane_dataset(set_name='train', batch_size=2):
     my_data_list = data_collection[set_name]
     dataset = PlaneDataset(set_name, my_data_list)
-    loader = DataLoader(dataset, batch_size=batch_size, num_workers=4,
+    loader = DataLoader(dataset, batch_size=batch_size, num_workers=16,
                                               pin_memory=True, shuffle=True)
     return loader, dataset
 
