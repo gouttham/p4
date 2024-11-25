@@ -1,3 +1,0 @@
-
-pip install pycocotools>=2.0.1
-python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
