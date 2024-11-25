@@ -172,7 +172,7 @@ class PlaneDataset(Dataset):
       return len(self.instance_map)
 
   def numpy_to_tensor(self, img, mask):
-    if self.transforms is not None:
+    if self.tran is not None:
 
         if random.random() > 0.5:
             img = cv2.flip(img,1)
