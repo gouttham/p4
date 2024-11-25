@@ -398,6 +398,7 @@ def iou(gt, pd):
         return union
     else:
         iou = intersection / union
+        return iou
 
 
 total_iou = 0
