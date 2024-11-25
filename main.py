@@ -1,7 +1,7 @@
 # import some common libraries
 from sklearn.metrics import jaccard_score
 from PIL import Image, ImageDraw
-from tqdm.notebook import tqdm
+import tqdm
 import pandas as pd
 import numpy as np
 import datetime
