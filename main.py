@@ -370,10 +370,15 @@ class MyModel(nn.Module):
 
 # eval
 
+'''
+# Before starting the evaluation, you need to set the model mode to eval
+# You may load the trained model again, in case if you want to continue your code later
+# TODO: approx 15 lines
+'''
 batch_size = 8
 model = MyModel().cuda()
-# model.load_state_dict(torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR)))
-model = model.eval() # chaning the model to evaluation mode will fix the bachnorm layers
+model.load_state_dict(torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR)))
+model = model.eval()  # chaning the model to evaluation mode will fix the bachnorm layers
 loader, dataset = get_plane_dataset('validation', batch_size)
 
 
@@ -382,14 +387,17 @@ def sigmoid(x):
 
 
 def iou(gt, pd):
-    gt = sigmoid(gt)
-    pd = sigmoid(pd)
-    intersection = np.count_nonzero(np.multiply(gt, pd))
-    union = np.count_nonzero(gt + pd)
-    if union != 0:
-        return intersection / union
+    sigmoid(pd)
+    mask1 = gt.astype(bool)
+    mask2 = pd.astype(bool)
+
+    intersection = np.logical_and(mask1, mask2).sum()
+    union = np.logical_or(mask1, mask2).sum()
+
+    if union == 0:
+        return union
     else:
-        return 0
+        iou = intersection / union
 
 
 total_iou = 0
@@ -404,9 +412,15 @@ for (img, mask) in tqdm(loader):
         pred = model(img).cpu().detach()
         for i in range(img.shape[0]):
             cur_pred = np.array(pred[i].cpu())[0]
-            cur_mask = np.array(mask[i].cpu())[0]
+            cur_mask = np.array(mask[i].cpu())[0].squeeze()
 
+            cur_pred = np.where(cur_pred > 0.5, 255.0, 0.0)
+            cur_mask = np.where(cur_mask > 0.5, 255.0, 0.0)
             ctr += 1
-            print(iou(cur_mask, cur_pred))
             global_iou += iou(cur_mask, cur_pred)
-print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou/ctr))
+
+        '''
+        ## Complete the code by obtaining the IoU for each img and print the final Mean IoU
+        '''
+
+print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou / ctr))
