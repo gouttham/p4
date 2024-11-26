@@ -123,6 +123,13 @@ data_collection = {
 }
 
 
+# for sel in ["train","test",'validation']:
+#     DatasetCatalog.register("data_detection_" + sel, lambda sel=sel: data_collection[sel])
+#     MetadataCatalog.get("data_detection_" + sel).set(thing_classes=["planes"])
+# train_metadata = MetadataCatalog.get("data_detection_train")
+# validation_metadata = MetadataCatalog.get("data_detection_validation")
+# test_metadata = MetadataCatalog.get("data_detection_test")
+
 def get_instance_sample(data, idx, img=None):
 
   if img==None:
@@ -338,59 +345,59 @@ class MyModel(nn.Module):
 '''
 
 # Training
-# Set the hyperparameters
-num_epochs = 100
-batch_size = 8
-learning_rate = 1e-2
-weight_decay = 1e-5
-
-model = MyModel() # initialize the model
-model = model.cuda() # move the model to GPU
-loader, _ = get_plane_dataset('train', batch_size) # initialize data_loader
-crit = nn.BCEWithLogitsLoss() # Define the loss function
-optim = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay) # Initialize the optimizer as SGD
-
-
-def get_lr(optim):
-    cur_lr = 0
-    for param_group in optim.param_groups:
-        cur_lr = param_group['lr']
-    return cur_lr
-
-loss_ctr =0
-best_loss = 100
-# start the training procedure
-for epoch in range(num_epochs):
-  cur_lr = get_lr(optim)
-  print("Epoch: {}, cur_lr: {}".format(epoch, cur_lr))
-  total_loss = 0
-  for (img, mask) in tqdm(loader):
-    img = torch.tensor(img, device=torch.device('cuda'), requires_grad = True)
-    mask = torch.tensor(mask, device=torch.device('cuda'), requires_grad = True)
-    pred = model(img)
-    loss = crit(pred, mask)
-    optim.zero_grad()
-    loss.backward()
-    optim.step()
-    total_loss += loss.cpu().data
-  avg_loss = total_loss / len(loader)
-  print("Epoch: {}, Loss: {}".format(epoch, avg_loss))
-  if avg_loss < best_loss:
-    best_loss = avg_loss
-    torch.save(model.state_dict(), '{}/output/{}_{}_segmentation_model.pth'.format(BASE_DIR, epoch,np.round(best_loss, 4)))
-  else:
-      loss_ctr +=1
-      if loss_ctr > 2:
-          loss_ctr = 0
-          for param_group in optim.param_groups:
-            if cur_lr > 1e-6:
-                param_group['lr'] /= 2
-                cur_lr = param_group['lr']
-
-'''
-# Saving the final model
-'''
-torch.save(model.state_dict(), '{}/output/final_segmentation_model.pth'.format(BASE_DIR))
+# # Set the hyperparameters
+# num_epochs = 100
+# batch_size = 8
+# learning_rate = 1e-2
+# weight_decay = 1e-5
+#
+# model = MyModel() # initialize the model
+# model = model.cuda() # move the model to GPU
+# loader, _ = get_plane_dataset('train', batch_size) # initialize data_loader
+# crit = nn.BCEWithLogitsLoss() # Define the loss function
+# optim = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay) # Initialize the optimizer as SGD
+#
+#
+# def get_lr(optim):
+#     cur_lr = 0
+#     for param_group in optim.param_groups:
+#         cur_lr = param_group['lr']
+#     return cur_lr
+#
+# loss_ctr =0
+# best_loss = 100
+# # start the training procedure
+# for epoch in range(num_epochs):
+#   cur_lr = get_lr(optim)
+#   print("Epoch: {}, cur_lr: {}".format(epoch, cur_lr))
+#   total_loss = 0
+#   for (img, mask) in tqdm(loader):
+#     img = torch.tensor(img, device=torch.device('cuda'), requires_grad = True)
+#     mask = torch.tensor(mask, device=torch.device('cuda'), requires_grad = True)
+#     pred = model(img)
+#     loss = crit(pred, mask)
+#     optim.zero_grad()
+#     loss.backward()
+#     optim.step()
+#     total_loss += loss.cpu().data
+#   avg_loss = total_loss / len(loader)
+#   print("Epoch: {}, Loss: {}".format(epoch, avg_loss))
+#   if avg_loss < best_loss:
+#     best_loss = avg_loss
+#     torch.save(model.state_dict(), '{}/output/{}_{}_segmentation_model.pth'.format(BASE_DIR, epoch,np.round(best_loss, 4)))
+#   else:
+#       loss_ctr +=1
+#       if loss_ctr > 2:
+#           loss_ctr = 0
+#           for param_group in optim.param_groups:
+#             if cur_lr > 1e-6:
+#                 param_group['lr'] /= 2
+#                 cur_lr = param_group['lr']
+#
+# '''
+# # Saving the final model
+# '''
+# torch.save(model.state_dict(), '{}/output/final_segmentation_model.pth'.format(BASE_DIR))
 
 
 # eval
@@ -406,7 +413,7 @@ torch.save(model.state_dict(), '{}/output/final_segmentation_model.pth'.format(B
 batch_size = 8
 model = MyModel().cuda()
 
-model.load_state_dict(torch.load('{}/output/114_0.13619999587535858_segmentation_model.pth'.format(BASE_DIR)))
+model.load_state_dict(torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR)))
 model = model.eval()  # chaning the model to evaluation mode will fix the bachnorm layers
 loader, dataset = get_plane_dataset('validation', batch_size)
 
