@@ -118,7 +118,7 @@ print(len(test_data))
 
 
 for sel in ["train","test"]:
-    if "train":
+    if sel == "train":
         temp_train, temp_validation = get_detection_data(sel)
         DatasetCatalog.register("data_detection_train", lambda sel=sel: temp_train)
         MetadataCatalog.get("data_detection_train").set(thing_classes=["plane"])
