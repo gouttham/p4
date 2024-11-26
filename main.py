@@ -65,7 +65,7 @@ def get_detection_data(set_name):
               record = {}
               record['annotations'] = []
               record["file_name"] = filename
-              record["image_id"] = idx
+              record["image_id"] = ech_ann["image_id"]
               record["height"] = height
               record["width"] = width
               file_data[filename] = record
@@ -116,6 +116,16 @@ print(len(val_data))
 print(len(test_data))
 
 
+
+DatasetCatalog.remove('data_detection_train')
+MetadataCatalog.remove('data_detection_train')
+
+DatasetCatalog.remove('data_detection_validation')
+MetadataCatalog.remove('data_detection_validation')
+
+
+DatasetCatalog.remove('data_detection_test')
+MetadataCatalog.remove('data_detection_test')
 
 for sel in ["train","test"]:
     if sel == "train":
