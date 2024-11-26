@@ -64,7 +64,6 @@ def get_detection_data(set_name):
               width, height = Image.open(filename).size
               record = {}
               record['annotations'] = []
-              print(filename)
               record["file_name"] = filename
               record["image_id"] = idx
               record["height"] = height
