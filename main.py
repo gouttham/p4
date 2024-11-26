@@ -115,19 +115,48 @@ print(len(train_data))
 print(len(val_data))
 print(len(test_data))
 
-data_collection = {
-    "train":train_data,
-    "validation":val_data,
-    "test":test_data
-}
 
 
-# for sel in ["train","test",'validation']:
-#     DatasetCatalog.register("data_detection_" + sel, lambda sel=sel: data_collection[sel])
-#     MetadataCatalog.get("data_detection_" + sel).set(thing_classes=["planes"])
-# train_metadata = MetadataCatalog.get("data_detection_train")
-# validation_metadata = MetadataCatalog.get("data_detection_validation")
-# test_metadata = MetadataCatalog.get("data_detection_test")
+for sel in ["train","validation","test"]:
+    DatasetCatalog.register("data_detection_" + sel, lambda sel=sel: get_detection_data(sel))
+    MetadataCatalog.get("data_detection_" + sel).set(thing_classes=["plane"])
+train_metadata = MetadataCatalog.get("data_detection_train")
+validation_metadata = MetadataCatalog.get("data_detection_validation")
+test_metadata = MetadataCatalog.get("data_detection_test")
+
+
+cfg = get_cfg()
+cfg.OUTPUT_DIR = "{}/output/".format(BASE_DIR)
+cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml"))
+cfg.SOLVER.MAX_ITER = 500
+cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512
+cfg.SOLVER.IMS_PER_BATCH = 2
+cfg.SOLVER.BASE_LR = 0.00025
+cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
+
+cfg.DATASETS.TRAIN = ("data_detection_train",)
+cfg.DATASETS.TEST = ("data_detection_test",)
+
+
+cfg.OUTPUT_DIR = f"{BASE_DIR}/output/"
+os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
+
+trainer = DefaultTrainer(cfg)
+trainer.resume_or_load(resume=False)
+trainer.train()
+
+cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
+predictor = DefaultPredictor(cfg)
+
+
+evaluator = COCOEvaluator("data_detection_train", tasks=cfg, distributed=False, output_dir=cfg.OUTPUT_DIR)
+val_loader = build_detection_test_loader(cfg, "data_detection_train")
+print(inference_on_dataset(trainer.model, val_loader, evaluator))
+
+
+
+0/0
 
 def get_instance_sample(data, idx, img=None):
 
@@ -228,6 +257,10 @@ def get_plane_dataset(set_name='train', batch_size=2):
     loader = DataLoader(dataset, batch_size=batch_size, num_workers=32,
                                               pin_memory=True, shuffle=True)
     return loader, dataset
+
+
+
+
 
 
 
@@ -392,70 +425,59 @@ for epoch in range(num_epochs):
             if cur_lr > 1e-6:
                 param_group['lr'] /= 2
                 cur_lr = param_group['lr']
-
-'''
-# Saving the final model
-'''
 torch.save(model.state_dict(), '{}/output/final_segmentation_model.pth'.format(BASE_DIR))
 
 
 # eval
 
-'''
-# Before starting the evaluation, you need to set the model mode to eval
-# You may load the trained model again, in case if you want to continue your code later
-# TODO: approx 15 lines
-'''
 
-
-
-batch_size = 8
-model = MyModel().cuda()
-
-model.load_state_dict(torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR)))
-model = model.eval()  # chaning the model to evaluation mode will fix the bachnorm layers
-loader, dataset = get_plane_dataset('validation', batch_size)
-
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-
-def iou(gt, pd):
-    sigmoid(pd)
-    mask1 = gt.astype(bool)
-    mask2 = pd.astype(bool)
-
-    intersection = np.logical_and(mask1, mask2).sum()
-    union = np.logical_or(mask1, mask2).sum()
-
-    if union == 0:
-        return union
-    else:
-        iou = intersection / union
-        return iou
-
-total_iou = 0
-
-ctr = 0
-global_iou = 0
-for (img, mask) in tqdm(loader):
-    with torch.no_grad():
-        img = img.cuda()
-        mask = mask.cuda()
-        mask = torch.unsqueeze(mask, 1).detach()
-        pred = model(img).cpu().detach()
-        for i in range(img.shape[0]):
-            cur_pred = np.array(pred[i].cpu())[0]
-            cur_mask = np.array(mask[i].cpu())[0].squeeze()
-
-            cur_pred = np.where(cur_pred > 0.5, 255.0, 0.0)
-            cur_mask = np.where(cur_mask > 0.5, 255.0, 0.0)
-            ctr += 1
-            global_iou += iou(cur_mask, cur_pred)
-
-        '''
-        ## Complete the code by obtaining the IoU for each img and print the final Mean IoU
-        '''
-
-print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou / ctr))
+# batch_size = 8
+# model = MyModel().cuda()
+#
+# model.load_state_dict(torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR)))
+# model = model.eval()  # chaning the model to evaluation mode will fix the bachnorm layers
+# loader, dataset = get_plane_dataset('validation', batch_size)
+#
+#
+# def sigmoid(x):
+#     return 1 / (1 + np.exp(-x))
+#
+#
+# def iou(gt, pd):
+#     sigmoid(pd)
+#     mask1 = gt.astype(bool)
+#     mask2 = pd.astype(bool)
+#
+#     intersection = np.logical_and(mask1, mask2).sum()
+#     union = np.logical_or(mask1, mask2).sum()
+#
+#     if union == 0:
+#         return union
+#     else:
+#         iou = intersection / union
+#         return iou
+#
+# total_iou = 0
+#
+# ctr = 0
+# global_iou = 0
+# for (img, mask) in tqdm(loader):
+#     with torch.no_grad():
+#         img = img.cuda()
+#         mask = mask.cuda()
+#         mask = torch.unsqueeze(mask, 1).detach()
+#         pred = model(img).cpu().detach()
+#         for i in range(img.shape[0]):
+#             cur_pred = np.array(pred[i].cpu())[0]
+#             cur_mask = np.array(mask[i].cpu())[0].squeeze()
+#
+#             cur_pred = np.where(cur_pred > 0.5, 255.0, 0.0)
+#             cur_mask = np.where(cur_mask > 0.5, 255.0, 0.0)
+#             ctr += 1
+#             global_iou += iou(cur_mask, cur_pred)
+#
+#         '''
+#         ## Complete the code by obtaining the IoU for each img and print the final Mean IoU
+#         '''
+#
+# print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou / ctr))
