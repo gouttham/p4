@@ -64,6 +64,7 @@ def get_detection_data(set_name):
               width, height = Image.open(filename).size
               record = {}
               record['annotations'] = []
+              print(filename)
               record["file_name"] = filename
               record["image_id"] = idx
               record["height"] = height
@@ -145,6 +146,9 @@ trainer = DefaultTrainer(cfg)
 trainer.resume_or_load(resume=False)
 trainer.train()
 
+
+
+
 cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
 predictor = DefaultPredictor(cfg)
@@ -157,6 +161,20 @@ print(inference_on_dataset(trainer.model, val_loader, evaluator))
 
 
 0/0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def get_instance_sample(data, idx, img=None):
 
