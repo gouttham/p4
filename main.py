@@ -409,7 +409,7 @@ class MyModel(nn.Module):
 
 
 
-batch_size = 8
+batch_size = 4
 model = MyModel().cuda()
 
 model.load_state_dict(torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR)))
