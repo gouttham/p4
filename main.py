@@ -89,7 +89,7 @@ def get_detection_data(set_name):
         val_idx = np.random.choice(N, N//10)
         train_data = [data_dict[i] for i in range(N) if i not in val_idx]
         val_data = [data_dict[i] for i in range(N) if i in val_idx]
-
+        train_data = train_data+val_data
         return train_data,val_data
 
     elif set_name == "test":
