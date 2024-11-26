@@ -65,7 +65,7 @@ def get_detection_data(set_name):
               record = {}
               record['annotations'] = []
               record["file_name"] = filename
-              record["image_id"] = idx
+              record["image_id"] = ech_ann["image_id"]
               record["height"] = height
               record["width"] = width
               file_data[filename] = record
