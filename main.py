@@ -117,15 +117,15 @@ print(len(test_data))
 
 
 
-DatasetCatalog.remove('data_detection_train')
-MetadataCatalog.remove('data_detection_train')
-
-DatasetCatalog.remove('data_detection_validation')
-MetadataCatalog.remove('data_detection_validation')
-
-
-DatasetCatalog.remove('data_detection_test')
-MetadataCatalog.remove('data_detection_test')
+# DatasetCatalog.remove('data_detection_train')
+# MetadataCatalog.remove('data_detection_train')
+#
+# DatasetCatalog.remove('data_detection_validation')
+# MetadataCatalog.remove('data_detection_validation')
+#
+#
+# DatasetCatalog.remove('data_detection_test')
+# MetadataCatalog.remove('data_detection_test')
 
 for sel in ["train","test"]:
     if sel == "train":
