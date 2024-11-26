@@ -82,7 +82,6 @@ def get_detection_data(set_name):
                 "bbox_mode": BoxMode.XYXY_ABS,"segmentation": [poly],"category_id": 0}
             record['annotations'].append(obj)
 
-
         data_dict = np.array(list(file_data.values()))
         N = len(data_dict)
 
