@@ -117,9 +117,18 @@ print(len(test_data))
 
 
 
-for sel in ["train","validation","test"]:
-    DatasetCatalog.register("data_detection_" + sel, lambda sel=sel: get_detection_data(sel))
-    MetadataCatalog.get("data_detection_" + sel).set(thing_classes=["plane"])
+for sel in ["train","test"]:
+    if "train":
+        temp_train, temp_validation = get_detection_data(sel)
+        DatasetCatalog.register("data_detection_train", lambda sel=sel: temp_train)
+        MetadataCatalog.get("data_detection_train").set(thing_classes=["plane"])
+
+        DatasetCatalog.register("data_detection_validation", lambda sel=sel: temp_validation)
+        MetadataCatalog.get("data_detection_validation").set(thing_classes=["plane"])
+    else:
+        DatasetCatalog.register("data_detection_" + sel, lambda sel=sel: get_detection_data(sel))
+        MetadataCatalog.get("data_detection_" + sel).set(thing_classes=["plane"])
+
 train_metadata = MetadataCatalog.get("data_detection_train")
 validation_metadata = MetadataCatalog.get("data_detection_validation")
 test_metadata = MetadataCatalog.get("data_detection_test")
