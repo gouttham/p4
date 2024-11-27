@@ -350,6 +350,8 @@ class PlaneDataset(Dataset):
         self.instance_map = []
         for i, d in enumerate(self.data):
             for j in range(len(d["annotations"])):
+                import pdb
+                pdb.set_trace()
                 self.instance_map.append([i, j])
 
     """
