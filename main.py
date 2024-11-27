@@ -569,7 +569,7 @@ for (img, mask) in tqdm(loader):
 
         '''
         ## Complete the code by obtaining the IoU for each img and print the final Mean IoU
-        '''
+'''
 
 print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou / ctr))
 '''
