@@ -304,6 +304,9 @@ for pic in test_dicts:
             "obj_img": obj_img,
             "obj_mask": obj_mask,
         }
+        if len(obj_mask.shape)==1:
+            import pdb
+            pdb.set_trace()
         objs.append(obj)
 
     record["annotations"] = objs
