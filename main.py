@@ -50,6 +50,7 @@ BASE_DIR = '/localscratch/gna23/p4/CMPT_CV_lab4/'
 # TODO: approx 35 lines
 '''
 
+
 def get_detection_data(set_name):
     img_base_dir = f'{BASE_DIR}/data/{set_name}'
 
@@ -116,6 +117,29 @@ print(len(val_data))
 print(len(test_data))
 
 
+TRAIN_DETECTION = False
+TRAIN_SEGMENTATION = False
+EVAL_DETECTION = False
+EVAL_SEGMENTATION = False
+
+def normalize_image(img):
+    img = img.to(dtype=torch.float32)
+    min_val = img.min()
+    max_val = img.max()
+    normalized = 255 * (img - min_val) / (max_val - min_val)
+    return normalized.to(dtype=torch.uint8)
+
+def is_gpu_available():
+  return torch.cuda.is_available()
+
+def get_seg_model(pth='{}/output/final_segmentation_model.pth'.format(BASE_DIR)):
+  if is_gpu_available():
+    model = MyModel().cuda()
+    model.load_state_dict(torch.load(pth))
+  else:
+    model = MyModel()
+    model.load_state_dict(torch.load(pth,map_location='cpu'))
+  return model
 
 # DatasetCatalog.remove('data_detection_train')
 # MetadataCatalog.remove('data_detection_train')
@@ -210,8 +234,10 @@ trainer = CustomTrainer(cfg)
 
 # for name, param in trainer.model.named_parameters():
 #     print(f"Layer: {name}, Requires Grad: {param.requires_grad}")
-trainer.resume_or_load(resume=False)
-# trainer.train()
+
+if TRAIN_DETECTION:
+    trainer.resume_or_load(resume=False)
+    trainer.train()
 
 
 
@@ -221,10 +247,10 @@ print("cfg.MODEL.WEIGHTS" , cfg.MODEL.WEIGHTS)
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
 predictor = DefaultPredictor(cfg)
 
-
-evaluator = COCOEvaluator("data_detection_train", tasks=cfg, distributed=False, output_dir=cfg.OUTPUT_DIR)
-val_loader = build_detection_test_loader(cfg, "data_detection_train")
-print(inference_on_dataset(predictor.model, val_loader, evaluator))
+if EVAL_DETECTION:
+    evaluator = COCOEvaluator("data_detection_train", tasks=cfg, distributed=False, output_dir=cfg.OUTPUT_DIR)
+    val_loader = build_detection_test_loader(cfg, "data_detection_train")
+    print(inference_on_dataset(predictor.model, val_loader, evaluator))
 
 
 
@@ -485,44 +511,43 @@ def get_lr(optim):
 loss_ctr =0
 best_loss = 100
 # start the training procedure
-'''
-for epoch in range(num_epochs):
-  cur_lr = get_lr(optim)
-  print("Epoch: {}, cur_lr: {}".format(epoch, cur_lr))
-  total_loss = 0
-  for (img, mask) in tqdm(loader):
-    img = torch.tensor(img, device=torch.device('cuda'), requires_grad = True)
-    mask = torch.tensor(mask, device=torch.device('cuda'), requires_grad = True)
-    pred = model(img)
-    loss = crit(pred, mask)
-    optim.zero_grad()
-    loss.backward()
-    optim.step()
-    total_loss += loss.cpu().data
-  avg_loss = total_loss / len(loader)
-  print("Epoch: {}, Loss: {}".format(epoch, avg_loss))
-  if avg_loss < best_loss:
-    best_loss = avg_loss
-    torch.save(model.state_dict(), '{}/output/{}_{}_segmentation_model.pth'.format(BASE_DIR, epoch,np.round(best_loss, 4)))
-  else:
-      loss_ctr +=1
-      if loss_ctr > 2:
-          loss_ctr = 0
-          for param_group in optim.param_groups:
-            if cur_lr > 1e-6:
-                param_group['lr'] /= 2
-                cur_lr = param_group['lr']
-torch.save(model.state_dict(), '{}/output/final_segmentation_model.pth'.format(BASE_DIR))
-'''
+if TRAIN_SEGMENTATION:
+    for epoch in range(num_epochs):
+      cur_lr = get_lr(optim)
+      print("Epoch: {}, cur_lr: {}".format(epoch, cur_lr))
+      total_loss = 0
+      for (img, mask) in tqdm(loader):
+        img = torch.tensor(img, device=torch.device('cuda'), requires_grad = True)
+        mask = torch.tensor(mask, device=torch.device('cuda'), requires_grad = True)
+        pred = model(img)
+        loss = crit(pred, mask)
+        optim.zero_grad()
+        loss.backward()
+        optim.step()
+        total_loss += loss.cpu().data
+      avg_loss = total_loss / len(loader)
+      print("Epoch: {}, Loss: {}".format(epoch, avg_loss))
+      if avg_loss < best_loss:
+        best_loss = avg_loss
+        torch.save(model.state_dict(), '{}/output/{}_{}_segmentation_model.pth'.format(BASE_DIR, epoch,np.round(best_loss, 4)))
+      else:
+          loss_ctr +=1
+          if loss_ctr > 2:
+              loss_ctr = 0
+              for param_group in optim.param_groups:
+                if cur_lr > 1e-6:
+                    param_group['lr'] /= 2
+                    cur_lr = param_group['lr']
+    torch.save(model.state_dict(), '{}/output/final_segmentation_model.pth'.format(BASE_DIR))
+
 
 
 # eval
 
 
 batch_size = 8
-model = MyModel().cuda()
+model = get_seg_model()
 
-model.load_state_dict(torch.load('{}/output_v3/final_segmentation_model.pth'.format(BASE_DIR)))
 model = model.eval()  # chaning the model to evaluation mode will fix the bachnorm layers
 loader, dataset = get_plane_dataset('train', batch_size)
 
@@ -549,26 +574,28 @@ total_iou = 0
 
 ctr = 0
 global_iou = 0
-for (img, mask) in tqdm(loader):
-    with torch.no_grad():
-        img = img.cuda()
-        mask = mask.cuda()
-        mask = torch.unsqueeze(mask, 1).detach()
-        pred = model(img).cpu().detach()
-        for i in range(img.shape[0]):
-            cur_pred = np.array(pred[i].cpu())[0]
-            cur_mask = np.array(mask[i].cpu())[0].squeeze()
 
-            cur_pred = np.where(cur_pred > 0.5, 255.0, 0.0)
-            cur_mask = np.where(cur_mask > 0.5, 255.0, 0.0)
-            ctr += 1
-            global_iou += iou(cur_mask, cur_pred)
+if EVAL_SEGMENTATION:
+    for (img, mask) in tqdm(loader):
+        with torch.no_grad():
+            img = img.cuda()
+            mask = mask.cuda()
+            mask = torch.unsqueeze(mask, 1).detach()
+            pred = model(img).cpu().detach()
+            for i in range(img.shape[0]):
+                cur_pred = np.array(pred[i].cpu())[0]
+                cur_mask = np.array(mask[i].cpu())[0].squeeze()
 
-        '''
-        ## Complete the code by obtaining the IoU for each img and print the final Mean IoU
-'''
+                cur_pred = np.where(cur_pred > 0.5, 255.0, 0.0)
+                cur_mask = np.where(cur_mask > 0.5, 255.0, 0.0)
+                ctr += 1
+                global_iou += iou(cur_mask, cur_pred)
 
-print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou / ctr))
+            '''
+            ## Complete the code by obtaining the IoU for each img and print the final Mean IoU
+    '''
+
+    print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou / ctr))
 
 
 
@@ -588,18 +615,11 @@ print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou / ctr))
 # TODO: approx 35 lines
 '''
 
+
+
 model = get_seg_model()
 
 
-def normalize_image(img):
-    img = img.to(dtype=torch.float32)
-    min_val = img.min()
-    max_val = img.max()
-    normalized = 255 * (img - min_val) / (max_val - min_val)
-    return normalized.to(dtype=torch.uint8)
-
-def is_gpu_available():
-  return torch.cuda.is_available()
 
 def get_segment_for_crop(idx, y1, x1, y2, x2, img, model, device):
     ech_crop = cv2.resize(img[x1:x2, y1:y2], (128, 128), interpolation=cv2.INTER_AREA)
