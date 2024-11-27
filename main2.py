@@ -304,9 +304,6 @@ for pic in test_dicts:
             "obj_img": obj_img,
             "obj_mask": obj_mask,
         }
-        if len(obj_mask.shape)==1:
-            import pdb
-            pdb.set_trace()
         objs.append(obj)
 
     record["annotations"] = objs
@@ -583,6 +580,7 @@ def get_prediction_test(data, prepared_imageset):
                 name["annotations"].extend([{"obj_mask": None} for _ in range(num_preds - num_annotations)])
             # Assign predictions
             for idx, pred in enumerate(pred_mask):
+                print(pred.shape)
                 name["annotations"][idx]["obj_mask"] = pred
     return img, gt_mask, pred_mask
 
