@@ -320,33 +320,12 @@ for pic in test_dicts:
 # TODO: approx 10 lines
 '''
 
-# def get_instance_sample(data, idx, prepared_imageset):
-#   for i in prepared_imageset:
-#     if i["file_name"] == data["file_name"]:
-#       obj_img = i["annotations"][idx]["obj_img"]
-#       obj_mask = i["annotations"][idx]["obj_mask"]
-#       break
-#   return obj_img, obj_mask
-
-def get_instance_sample(data, idx, img=None):
-
-  if img==None:
-    file_name = data['file_name']
-    img = cv2.imread(file_name)
-
-  # for idx in range(len(data['annotations'])):
-
-  assert idx < len(data['annotations'])
-  cur_ann = data['annotations'][idx]
-  [tl_x,tl_y,br_x,br_y] = [int(i) for i in cur_ann['bbox']]
-  mask = detectron2.utils.visualizer.GenericMask(cur_ann["segmentation"], data['height'], data['width']).mask
-
-  sample_img = img[tl_y:br_y, tl_x:br_x]
-  sample_mask = mask[tl_y:br_y, tl_x:br_x]*255
-
-  obj_img = cv2.resize(sample_img, (128, 128), interpolation = cv2.INTER_AREA)
-  obj_mask = cv2.resize(sample_mask, (128, 128), interpolation = cv2.INTER_AREA)
-
+def get_instance_sample(data, idx, prepared_imageset):
+  for i in prepared_imageset:
+    if i["file_name"] == data["file_name"]:
+      obj_img = i["annotations"][idx]["obj_img"]
+      obj_mask = i["annotations"][idx]["obj_mask"]
+      break
   return obj_img, obj_mask
 
 '''
