@@ -153,7 +153,7 @@ cfg.SOLVER.IMS_PER_BATCH = 2
 cfg.SOLVER.BASE_LR = 0.00025
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
 
-cfg.MODEL.BACKBONE.FREEZE_AT = 2
+
 
 cfg.DATASETS.TRAIN = ("data_detection_train",)
 cfg.DATASETS.TEST = ("data_detection_test",)
