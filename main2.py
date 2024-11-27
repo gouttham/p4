@@ -377,7 +377,7 @@ class PlaneDataset(Dataset):
         idx = self.instance_map[idx]
         data = self.data[idx[0]]
         ann_index = idx[1]
-        img, mask = get_instance_sample(data, ann_index)
+        img, mask = get_instance_sample(data, ann_index,self.predata)
 
         img, mask = self.numpy_to_tensor(img, mask)
         img = img.reshape((3,128,128))
