@@ -171,15 +171,10 @@ def collate_fn(ech_data):
     ech_data = copy.deepcopy(ech_data)
     image = utils.read_image(ech_data["file_name"], format="BGR")
     transform_list = [
-        T.Resize((512, 512)),
-        T.RandomFlip(prob=0.5, horizontal=False, vertical=True),
-        T.RandomFlip(prob=0.5, horizontal=True, vertical=False),
-        T.RandomRotation([-20, 20]),
         T.RandomBrightness(0.7, 1.3),
         T.RandomContrast(0.7, 1.3),
         T.RandomSaturation(0.7, 1.3),
         T.RandomLighting(0.7)]
-    print('hello')
     image, transforms = T.apply_transform_gens(transform_list, image)
     ech_data["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
 
