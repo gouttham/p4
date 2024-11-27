@@ -389,13 +389,13 @@ class PlaneDataset(Dataset):
 def get_plane_dataset(set_name, prepared_imageset,batch_size=2):
     my_data_list = DatasetCatalog.get("plane_{}".format(set_name))
     dataset = PlaneDataset(set_name, my_data_list,prepared_imageset)
-    loader = DataLoader(dataset, batch_size=batch_size, num_workers=2,
+    loader = DataLoader(dataset, batch_size=batch_size, num_workers=0,
                                               pin_memory=True, shuffle=True)
     return loader, dataset
 
 def get_prediction_dataset(set_name, data_list,prepared_imageset,batch_size=2):
     dataset = PlaneDataset(set_name, data_list,prepared_imageset)
-    loader = DataLoader(dataset, batch_size=batch_size, num_workers=2,
+    loader = DataLoader(dataset, batch_size=batch_size, num_workers=0,
                                               pin_memory=True, shuffle=False)
     return loader, dataset
 
