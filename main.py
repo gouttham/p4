@@ -164,7 +164,7 @@ os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 
 
 
-'''
+
 from detectron2.data import detection_utils as utils
 import detectron2.data.transforms as T
 from detectron2.data import build_detection_train_loader
@@ -226,8 +226,8 @@ print(inference_on_dataset(predictor.model, val_loader, evaluator))
 
 
 
-'''
 
+0/0
 
 
 
@@ -518,6 +518,7 @@ for epoch in range(num_epochs):
 torch.save(model.state_dict(), '{}/output/final_segmentation_model.pth'.format(BASE_DIR))
 '''
 
+'''
 # eval
 
 
@@ -571,3 +572,4 @@ for (img, mask) in tqdm(loader):
         '''
 
 print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou / ctr))
+'''
