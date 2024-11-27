@@ -549,7 +549,7 @@ def get_prediction_mask(data, prepared_imageset):
     # Predictions
     loader, _ = get_prediction_dataset("prediction", sample, prepared_imageset, batch_size=8)
     pred_data = []
-    for img, _ in tqdm(loader):
+    for img, _ in loader:
         with torch.no_grad():
             preds = nn.Sigmoid()(model(img.cuda()))
             pred_data.extend((pred.squeeze().cpu().numpy() >= 0.4).astype(int) for pred in preds)
