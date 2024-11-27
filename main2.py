@@ -382,6 +382,7 @@ class PlaneDataset(Dataset):
 
         img, mask = self.numpy_to_tensor(img, mask)
         img = img.reshape((3,128,128))
+        print(mask.shape)
         mask = mask.reshape((1,128,128))
 
         return img, mask
