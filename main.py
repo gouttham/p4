@@ -153,6 +153,8 @@ cfg.SOLVER.IMS_PER_BATCH = 2
 cfg.SOLVER.BASE_LR = 0.00025
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
 
+cfg.MODEL.BACKBONE.FREEZE_AT = 2
+
 cfg.DATASETS.TRAIN = ("data_detection_train",)
 cfg.DATASETS.TEST = ("data_detection_test",)
 
@@ -188,15 +190,44 @@ def collate_fn(ech_data):
     ech_data["instances"] = utils.annotations_to_instances(aug_annotation, image.shape[:2])
     return ech_data
 
+
+
+def find_all_linear_names(model):
+    cls = torch.nn.Linear
+    lora_module_names = set()
+    multimodal_keywords = ['mm_projector', 'vision_tower', 'vision_resampler']
+    for name, module in model.named_modules():
+        if any(mm_keyword in name for mm_keyword in multimodal_keywords):
+            continue
+        if isinstance(module, cls):
+            names = name.split('.')
+            lora_module_names.add(names[0] if len(names) == 1 else names[-1])
+
+    if 'lm_head' in lora_module_names: # needed for 16-bit
+        lora_module_names.remove('lm_head')
+    return list(lora_module_names)
+
+
+
 class CustomTrainer(DefaultTrainer):
     @classmethod
     def build_train_loader(cls, cfg):
         return build_detection_train_loader(cfg, mapper=collate_fn)
 
+#     @classmethod
+#     def build_model(cls, cfg):
+
+
 
 # trainer = DefaultTrainer(cfg)
 
 trainer = CustomTrainer(cfg)
+
+
+print(find_all_linear_names(trainer.model))
+0/0
+
+
 trainer.resume_or_load(resume=False)
 trainer.train()
 
