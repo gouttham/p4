@@ -204,7 +204,7 @@ class CustomTrainer(DefaultTrainer):
 
 # trainer = DefaultTrainer(cfg)
 
-cfg.MODEL.BACKBONE.FREEZE_AT = 4
+cfg.MODEL.BACKBONE.FREEZE_AT = 2
 
 
 trainer = CustomTrainer(cfg)
