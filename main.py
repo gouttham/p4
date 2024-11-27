@@ -216,6 +216,7 @@ trainer.resume_or_load(resume=False)
 
 
 cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
+print("cfg.MODEL.WEIGHTS" , cfg.MODEL.WEIGHTS)
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
 predictor = DefaultPredictor(cfg)
 
