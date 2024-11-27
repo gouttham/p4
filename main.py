@@ -211,7 +211,7 @@ trainer = CustomTrainer(cfg)
 # for name, param in trainer.model.named_parameters():
 #     print(f"Layer: {name}, Requires Grad: {param.requires_grad}")
 trainer.resume_or_load(resume=False)
-trainer.train()
+# trainer.train()
 
 
 
@@ -225,11 +225,6 @@ predictor = DefaultPredictor(cfg)
 evaluator = COCOEvaluator("data_detection_train", tasks=cfg, distributed=False, output_dir=cfg.OUTPUT_DIR)
 val_loader = build_detection_test_loader(cfg, "data_detection_train")
 print(inference_on_dataset(predictor.model, val_loader, evaluator))
-
-
-
-
-0/0
 
 
 
@@ -520,7 +515,7 @@ for epoch in range(num_epochs):
 torch.save(model.state_dict(), '{}/output/final_segmentation_model.pth'.format(BASE_DIR))
 '''
 
-'''
+
 # eval
 
 
@@ -574,4 +569,3 @@ for (img, mask) in tqdm(loader):
 '''
 
 print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou / ctr))
-'''
