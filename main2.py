@@ -557,7 +557,7 @@ def get_prediction_mask(data, prepared_imageset):
     # Combine predictions with ground truth
     pred_mask, gt = combine_predictions_with_gt(data, pred_data, height, width)
     gt_tensor = torch.from_numpy(gt).cuda()
-    return Image.open(data["file_name"]), gt_mask.cuda() if gt_mask is not None else gt_tensor, gt_tensor
+    return Image.open(data["file_name"]), gt_mask.cuda() if gt_mask is not None else gt_tensor, pred_mask
 
 def combine_predictions_with_gt(data, pred_data, height, width):
     gt = np.zeros((height, width), dtype=np.int32)
@@ -580,7 +580,6 @@ def get_prediction_test(data, prepared_imageset):
                 name["annotations"].extend([{"obj_mask": None} for _ in range(num_preds - num_annotations)])
             # Assign predictions
             for idx, pred in enumerate(pred_mask):
-                print(pred.shape)
                 name["annotations"][idx]["obj_mask"] = pred
     return img, gt_mask, pred_mask
 
