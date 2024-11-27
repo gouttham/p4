@@ -172,14 +172,26 @@ import copy
 def collate_fn(ech_data):
     ech_data = copy.deepcopy(ech_data)
     image = utils.read_image(ech_data["file_name"], format="BGR")
+    # transform_list = [
+    #     T.Resize((512, 512)),
+    #     T.RandomFlip(prob=0.5, horizontal=False, vertical=True),
+    #     T.RandomFlip(prob=0.5, horizontal=True, vertical=False),
+    #     T.RandomBrightness(0.5, 1.5),
+    #     T.RandomContrast(0.5, 1.5),
+    #     T.RandomRotation([-25, 25]),
+    #     T.RandomSaturation(0.5, 1.5),]
     transform_list = [
         T.Resize((512, 512)),
         T.RandomFlip(prob=0.5, horizontal=False, vertical=True),
         T.RandomFlip(prob=0.5, horizontal=True, vertical=False),
-        T.RandomBrightness(0.5, 1.5),
-        T.RandomContrast(0.5, 1.5),
-        T.RandomRotation([-25, 25]),
-        T.RandomSaturation(0.5, 1.5),]
+        T.RandomBrightness(0.8, 1.2),
+        T.RandomContrast(0.8, 1.2),
+        T.RandomRotation([-10, 10]),
+        T.RandomSaturation(0.8, 1.2),
+        T.RandomLighting(scale=0.1),
+        T.RandomApply(T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1), prob=0.5),
+        T.RandomApply(T.GaussianBlur(kernel_size=(5, 5), sigma=(0.1, 2.0)), prob=0.3),
+    ]
     image, transforms = T.apply_transform_gens(transform_list, image)
     ech_data["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
 
@@ -203,8 +215,6 @@ class CustomTrainer(DefaultTrainer):
 
 
 # trainer = DefaultTrainer(cfg)
-
-cfg.MODEL.BACKBONE.FREEZE_AT = 2
 
 
 trainer = CustomTrainer(cfg)
