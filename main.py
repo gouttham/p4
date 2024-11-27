@@ -189,7 +189,6 @@ def collate_fn(ech_data):
         T.RandomRotation([-10, 10]),
         T.RandomSaturation(0.8, 1.2),
         T.RandomLighting(scale=0.1),
-        T.RandomApply(T.GaussianBlur(kernel_size=(5, 5), sigma=(0.1, 2.0)), prob=0.3),
     ]
     image, transforms = T.apply_transform_gens(transform_list, image)
     ech_data["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
