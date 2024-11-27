@@ -273,7 +273,7 @@ def get_instance_sample(data, idx, img=None):
 
 
 class PlaneDataset(Dataset):
-  def __init__(self, set_name, data_list):
+  def __init__(self, set_name, data_list, is_aug=False):
 
       self.tran = transforms.Compose([
           transforms.ToTensor(), # Converting the image to tensor and change the image format (Channels-Last => Channels-First)
@@ -282,6 +282,11 @@ class PlaneDataset(Dataset):
       self.set_name = set_name
       self.data = data_list
       self.instance_map = []
+      self.is_aug = is_aug
+      if self.is_aug:
+          print("Augmentation Enabled")
+      else:
+          print("Augmentation Disabled")
       for i, d in enumerate(self.data):
         for j in range(len(d['annotations'])):
           self.instance_map.append([i,j])
@@ -295,7 +300,7 @@ class PlaneDataset(Dataset):
 
   def numpy_to_tensor(self, img, mask):
     if self.tran is not None:
-        if self.set_name == "train":
+        if self.is_aug:
             if random.random() > 0.35:  # Augment only 35% of the training data
                 if random.random() > 0.5:
                     img = cv2.flip(img, 1)
@@ -335,10 +340,10 @@ class PlaneDataset(Dataset):
 
     return img, mask
 
-def get_plane_dataset(set_name='train', batch_size=2):
+def get_plane_dataset(set_name='train', batch_size=2,is_aug=False):
     my_data_list = DatasetCatalog.get("data_detection_{}".format(set_name))
-    dataset = PlaneDataset(set_name, my_data_list)
-    loader = DataLoader(dataset, batch_size=batch_size, num_workers=32,
+    dataset = PlaneDataset(set_name, my_data_list,is_aug)
+    loader = DataLoader(dataset, batch_size=batch_size, num_workers=4,
                                               pin_memory=True, shuffle=True)
     return loader, dataset
 
@@ -469,7 +474,7 @@ weight_decay = 1e-5
 
 model = MyModel() # initialize the model
 model = model.cuda() # move the model to GPU
-loader, _ = get_plane_dataset('train', batch_size) # initialize data_loader
+loader, _ = get_plane_dataset('train', batch_size, True) # initialize data_loader
 crit = nn.BCEWithLogitsLoss() # Define the loss function
 optim = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay) # Initialize the optimizer as SGD
 
