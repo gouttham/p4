@@ -160,7 +160,49 @@ cfg.DATASETS.TEST = ("data_detection_test",)
 cfg.OUTPUT_DIR = f"{BASE_DIR}/output/"
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 
-trainer = DefaultTrainer(cfg)
+
+
+from detectron2.data import detection_utils as utils
+import detectron2.data.transforms as T
+from detectron2.data import build_detection_train_loader
+
+import copy
+def collate_fn(ech_data):
+    ech_data = copy.deepcopy(ech_data)
+    image = utils.read_image(ech_data["file_name"], format="BGR")
+    transform_list = [
+        T.Resize((512, 512)),
+        T.RandomFlip(prob=0.5, horizontal=False, vertical=True),
+        T.RandomFlip(prob=0.5, horizontal=True, vertical=False),
+        T.RandomRotation([-20, 20]),
+        T.RandomBrightness(0.7, 1.3),
+        T.RandomContrast(0.7, 1.3),
+        T.RandomSaturation(0.7, 1.3),
+        T.RandomLighting(0.7)]
+
+    image, transforms = T.apply_transform_gens(transform_list, image)
+    ech_data["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
+
+    annos = [
+        utils.transform_instance_annotations(ann, transforms, image.shape[:2])
+        for ann in ech_data.pop("annotations")
+        if ann.get("iscrowd", 0) == 0]
+    instances = utils.annotations_to_instances(annos, image.shape[:2])
+    ech_data["instances"] = utils.filter_empty_instances(instances)
+    return ech_data
+
+class CustomTrainer(DefaultTrainer):
+    @classmethod
+    def build_train_loader(cls, cfg):
+        return build_detection_train_loader(cfg, mapper=collate_fn)
+
+
+
+
+
+# trainer = DefaultTrainer(cfg)
+
+trainer = CustomTrainer(cfg)
 trainer.resume_or_load(resume=False)
 # trainer.train()
 
