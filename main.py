@@ -204,7 +204,7 @@ class CustomTrainer(DefaultTrainer):
 
 trainer = CustomTrainer(cfg)
 trainer.resume_or_load(resume=False)
-# trainer.train()
+trainer.train()
 
 
 
