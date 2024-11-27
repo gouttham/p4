@@ -388,6 +388,7 @@ class PlaneDataset(Dataset):
             # import pdb
             # pdb.set_trace()
             mask = torch.zeros((1,128,128))
+            print("Error")
         else:
             mask = mask.reshape((1,128,128))
 
