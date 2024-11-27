@@ -557,7 +557,7 @@ def get_prediction_mask(data, prepared_imageset):
     # Combine predictions with ground truth
     pred_mask, gt = combine_predictions_with_gt(data, pred_data, height, width)
     gt_tensor = torch.from_numpy(gt).cuda()
-    return Image.open(data["file_name"]), gt_mask.cuda() if gt_mask is not None else gt_tensor, pred_mask
+    return Image.open(data["file_name"]), gt_mask.cuda() if gt_mask is not None else gt_tensor, gt_tensor
 
 def combine_predictions_with_gt(data, pred_data, height, width):
     gt = np.zeros((height, width), dtype=np.int32)
