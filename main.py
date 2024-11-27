@@ -214,7 +214,7 @@ trainer = CustomTrainer(cfg)
 
 # for name, param in trainer.model.named_parameters():
 #     print(f"Layer: {name}, Requires Grad: {param.requires_grad}")
-trainer.resume_or_load(resume=True)
+trainer.resume_or_load(resume=False)
 trainer.train()
 
 
