@@ -223,7 +223,7 @@ class CustomTrainer(DefaultTrainer):
 
 trainer = CustomTrainer(cfg)
 
-
+print("*********************")
 print(find_all_linear_names(trainer.model))
 0/0
 
