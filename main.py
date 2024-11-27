@@ -132,7 +132,7 @@ def normalize_image(img):
 def is_gpu_available():
   return torch.cuda.is_available()
 
-def get_seg_model(pth='{}/output/final_segmentation_model.pth'.format(BASE_DIR)):
+def get_seg_model(pth='{}/output_v3/final_segmentation_model.pth'.format(BASE_DIR)):
   if is_gpu_available():
     model = MyModel().cuda()
     model.load_state_dict(torch.load(pth))

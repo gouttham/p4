@@ -510,7 +510,7 @@ class MyModel(nn.Module):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 batch_size = 8
 model = MyModel().cuda()
-model.load_state_dict(torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR)))
+model.load_state_dict(torch.load('{}/output_v3/final_segmentation_model.pth'.format(BASE_DIR)))
 model = model.eval() # changing the model to evaluation mode will fix the batchnorm layers
 loader, dataset = get_plane_dataset('train', train_crop, batch_size)
 
