@@ -174,20 +174,18 @@ def collate_fn(ech_data):
         T.Resize((512, 512)),
         T.RandomFlip(prob=0.5, horizontal=False, vertical=True),
         T.RandomFlip(prob=0.5, horizontal=True, vertical=False),
-        T.RandomRotation([-20, 20]),
-        T.RandomBrightness(0.7, 1.3),
-        T.RandomContrast(0.7, 1.3),
-        T.RandomSaturation(0.7, 1.3),
-        T.RandomLighting(0.7)]
+        T.RandomBrightness(0.5, 1.5),
+        T.RandomContrast(0.5, 1.5),
+        T.RandomRotation([-25, 25]),
+        T.RandomSaturation(0.5, 1.5),]
     image, transforms = T.apply_transform_gens(transform_list, image)
     ech_data["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
 
-    annos = [
-        utils.transform_instance_annotations(ann, transforms, image.shape[:2])
-        for ann in ech_data.pop("annotations")
-        if ann.get("iscrowd", 0) == 0]
-    instances = utils.annotations_to_instances(annos, image.shape[:2])
-    ech_data["instances"] = utils.filter_empty_instances(instances)
+    aug_annotation = []
+    for ech_ann in ech_data.pop("annotations"):
+        aug_annotation.append(utils.transform_instance_annotations(ech_ann, transforms, image.shape[:2]))
+
+    ech_data["instances"] = utils.annotations_to_instances(aug_annotation, image.shape[:2])
     return ech_data
 
 class CustomTrainer(DefaultTrainer):
