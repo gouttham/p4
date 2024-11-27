@@ -384,13 +384,8 @@ class PlaneDataset(Dataset):
 
         img, mask = self.numpy_to_tensor(img, mask)
         img = img.reshape((3,128,128))
-        if len(mask.shape)==1:
-            # import pdb
-            # pdb.set_trace()
-            mask = torch.zeros((1,128,128))
-            print("Error")
-        else:
-            mask = mask.reshape((1,128,128))
+
+        mask = mask.reshape((1, 128, 128))
 
         return img, mask
 
