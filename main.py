@@ -208,6 +208,10 @@ cfg.MODEL.BACKBONE.FREEZE_AT = 4
 
 
 trainer = CustomTrainer(cfg)
+
+for name, param in trainer.model.named_parameters():
+    print(f"Layer: {name}, Requires Grad: {param.requires_grad}")
+0/0
 trainer.resume_or_load(resume=False)
 trainer.train()
 
