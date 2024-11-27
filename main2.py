@@ -710,7 +710,7 @@ preddic = {"ImageId": [], "EncodedPixels": []}
 '''
 # Writing the predictions of the training set
 '''
-'''
+
 my_data_list = DatasetCatalog.get("plane_{}".format('train'))
 for i in tqdm(range(len(my_data_list)), position=0, leave=True):
   sample = my_data_list[i]
@@ -728,7 +728,7 @@ for i in tqdm(range(len(my_data_list)), position=0, leave=True):
       encPix = rle_encoding(tmp_mask)
       preddic['ImageId'].append(sample['image_id'])
       preddic['EncodedPixels'].append(encPix)
-'''
+
 '''
 # Writing the predictions of the test set
 '''
