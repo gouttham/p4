@@ -164,6 +164,7 @@ os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 
 
 
+'''
 from detectron2.data import detection_utils as utils
 import detectron2.data.transforms as T
 from detectron2.data import build_detection_train_loader
@@ -172,14 +173,6 @@ import copy
 def collate_fn(ech_data):
     ech_data = copy.deepcopy(ech_data)
     image = utils.read_image(ech_data["file_name"], format="BGR")
-    # transform_list = [
-    #     T.Resize((512, 512)),
-    #     T.RandomFlip(prob=0.5, horizontal=False, vertical=True),
-    #     T.RandomFlip(prob=0.5, horizontal=True, vertical=False),
-    #     T.RandomBrightness(0.5, 1.5),
-    #     T.RandomContrast(0.5, 1.5),
-    #     T.RandomRotation([-25, 25]),
-    #     T.RandomSaturation(0.5, 1.5),]
     transform_list = [
         T.Resize((512, 512)),
         T.RandomFlip(prob=0.5, horizontal=False, vertical=True),
@@ -207,9 +200,6 @@ class CustomTrainer(DefaultTrainer):
     def build_train_loader(cls, cfg):
         return build_detection_train_loader(cfg, mapper=collate_fn)
 
-#     @classmethod
-#     def build_model(cls, cfg):
-
 
 
 # trainer = DefaultTrainer(cfg)
@@ -236,7 +226,7 @@ print(inference_on_dataset(predictor.model, val_loader, evaluator))
 
 
 
-0/0
+'''
 
 
 
@@ -493,6 +483,7 @@ def get_lr(optim):
 loss_ctr =0
 best_loss = 100
 # start the training procedure
+'''
 for epoch in range(num_epochs):
   cur_lr = get_lr(optim)
   print("Epoch: {}, cur_lr: {}".format(epoch, cur_lr))
@@ -520,58 +511,58 @@ for epoch in range(num_epochs):
                 param_group['lr'] /= 2
                 cur_lr = param_group['lr']
 torch.save(model.state_dict(), '{}/output/final_segmentation_model.pth'.format(BASE_DIR))
-
+'''
 
 # eval
 
 
-# batch_size = 8
-# model = MyModel().cuda()
-#
-# model.load_state_dict(torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR)))
-# model = model.eval()  # chaning the model to evaluation mode will fix the bachnorm layers
-# loader, dataset = get_plane_dataset('validation', batch_size)
-#
-#
-# def sigmoid(x):
-#     return 1 / (1 + np.exp(-x))
-#
-#
-# def iou(gt, pd):
-#     sigmoid(pd)
-#     mask1 = gt.astype(bool)
-#     mask2 = pd.astype(bool)
-#
-#     intersection = np.logical_and(mask1, mask2).sum()
-#     union = np.logical_or(mask1, mask2).sum()
-#
-#     if union == 0:
-#         return union
-#     else:
-#         iou = intersection / union
-#         return iou
-#
-# total_iou = 0
-#
-# ctr = 0
-# global_iou = 0
-# for (img, mask) in tqdm(loader):
-#     with torch.no_grad():
-#         img = img.cuda()
-#         mask = mask.cuda()
-#         mask = torch.unsqueeze(mask, 1).detach()
-#         pred = model(img).cpu().detach()
-#         for i in range(img.shape[0]):
-#             cur_pred = np.array(pred[i].cpu())[0]
-#             cur_mask = np.array(mask[i].cpu())[0].squeeze()
-#
-#             cur_pred = np.where(cur_pred > 0.5, 255.0, 0.0)
-#             cur_mask = np.where(cur_mask > 0.5, 255.0, 0.0)
-#             ctr += 1
-#             global_iou += iou(cur_mask, cur_pred)
-#
-#         '''
-#         ## Complete the code by obtaining the IoU for each img and print the final Mean IoU
-#         '''
-#
-# print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou / ctr))
+batch_size = 8
+model = MyModel().cuda()
+
+model.load_state_dict(torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR)))
+model = model.eval()  # chaning the model to evaluation mode will fix the bachnorm layers
+loader, dataset = get_plane_dataset('validation', batch_size)
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+def iou(gt, pd):
+    sigmoid(pd)
+    mask1 = gt.astype(bool)
+    mask2 = pd.astype(bool)
+
+    intersection = np.logical_and(mask1, mask2).sum()
+    union = np.logical_or(mask1, mask2).sum()
+
+    if union == 0:
+        return union
+    else:
+        iou = intersection / union
+        return iou
+
+total_iou = 0
+
+ctr = 0
+global_iou = 0
+for (img, mask) in tqdm(loader):
+    with torch.no_grad():
+        img = img.cuda()
+        mask = mask.cuda()
+        mask = torch.unsqueeze(mask, 1).detach()
+        pred = model(img).cpu().detach()
+        for i in range(img.shape[0]):
+            cur_pred = np.array(pred[i].cpu())[0]
+            cur_mask = np.array(mask[i].cpu())[0].squeeze()
+
+            cur_pred = np.where(cur_pred > 0.5, 255.0, 0.0)
+            cur_mask = np.where(cur_mask > 0.5, 255.0, 0.0)
+            ctr += 1
+            global_iou += iou(cur_mask, cur_pred)
+
+        '''
+        ## Complete the code by obtaining the IoU for each img and print the final Mean IoU
+        '''
+
+print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou / ctr))
