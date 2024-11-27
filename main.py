@@ -569,3 +569,179 @@ for (img, mask) in tqdm(loader):
 '''
 
 print("\n #images: {}, Mean IoU: {}".format(ctr, global_iou / ctr))
+
+
+
+
+
+
+
+
+
+# PART3
+
+'''
+# Define a new function to obtain the prediction mask by passing a sample data
+# For this part, you need to use all the previous parts (predictor, get_instance_sample, data preprocessings, etc)
+# It is better to keep everything (as well as the output of this funcion) on gpu as tensors to speed up the operations.
+# pred_mask is the instance segmentation result and should have different values for different planes.
+# TODO: approx 35 lines
+'''
+
+model = get_seg_model()
+
+
+def normalize_image(img):
+    img = img.to(dtype=torch.float32)
+    min_val = img.min()
+    max_val = img.max()
+    normalized = 255 * (img - min_val) / (max_val - min_val)
+    return normalized.to(dtype=torch.uint8)
+
+def is_gpu_available():
+  return torch.cuda.is_available()
+
+def get_segment_for_crop(idx, y1, x1, y2, x2, img, model, device):
+    ech_crop = cv2.resize(img[x1:x2, y1:y2], (128, 128), interpolation=cv2.INTER_AREA)
+    pre_ech_crop = torch.unsqueeze(torch.tensor(transforms.ToTensor()(ech_crop), device=torch.device(device)), 0)
+    pd_crop = model(pre_ech_crop).detach().cpu().numpy()[0]
+
+    pd_crop = cv2.resize(pd_crop[0], (y2 - y1, x2 - x1), interpolation=cv2.INTER_AREA)
+
+    pd_crop = sigmoid(pd_crop)
+    pd_crop = np.where(pd_crop > 0.5, 255.0, 0.0)
+    pd_crop[pd_crop == 255.0] = idx + 1
+    return pd_crop
+
+
+def get_prediction_mask(data):
+    if is_gpu_available():
+        device = "cuda"
+    else:
+        device = "cpu"
+
+    img = cv2.imread(data['file_name'])
+
+    # Getting prediction masks
+
+    height = data['height']
+    width = data['width']
+
+    pd_masks = np.zeros([height, width])
+    gt_mask = np.zeros([height, width])
+    img_crops = []
+
+    if len(data['annotations']) > 0:
+        for idx, ech_ann in enumerate(data['annotations']):
+            y1, x1, y2, x2 = [int(i) for i in ech_ann['bbox']]
+            pd_masks[x1:x2, y1:y2] = get_segment_for_crop(idx, y1, x1, y2, x2, img, model, device)
+
+        # Getting GT masks
+        for idx, ech_ann in enumerate(data['annotations']):
+            y1, x1, y2, x2 = [int(i) for i in ech_ann['bbox']]
+            local_gt = detectron2.utils.visualizer.GenericMask(ech_ann['segmentation'], height, width).mask
+
+            gt_mask[x1:x1 + x2, y1:y1 + y2] = np.maximum(gt_mask[x1:x1 + x2, y1:y1 + y2],
+                                                         local_gt[x1:x1 + x2, y1:y1 + y2] * (idx + 1))
+            # gt_mask[x1:x1+x2, y1:y1+y2] = local_gt[x1:x1+x2, y1:y1+y2]*(idx+1)
+
+    else:
+        # img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        bbox_pred = predictor(img)['instances']
+        # return bbox_pred
+
+        for idx in range(len(bbox_pred)):
+            y1, x1, y2, x2 = np.array([int(i) for i in list(bbox_pred[idx]._fields['pred_boxes'])[0].cpu().numpy()])
+
+            pd_masks[x1:x2, y1:y2] = get_segment_for_crop(idx, y1, x1, y2, x2, img, model, device)
+
+    gt_mask = torch.tensor(gt_mask, device=torch.device(device))
+    pd_masks = torch.tensor(pd_masks, device=torch.device(device))
+
+    gt_mask = normalize_image(gt_mask)
+    pd_masks = normalize_image(pd_masks)
+
+    return img, gt_mask, pd_masks
+
+
+
+'''
+# ref: https://www.kaggle.com/rakhlin/fast-run-length-encoding-python
+# https://www.kaggle.com/c/airbus-ship-detection/overview/evaluation
+'''
+def rle_encoding(x):
+    '''
+    x: pytorch tensor on gpu, 1 - mask, 0 - background
+    Returns run length as list
+    '''
+    dots = torch.where(torch.flatten(x.long())==1)[0]
+    if(len(dots)==0):
+      return []
+    inds = torch.where(dots[1:]!=dots[:-1]+1)[0]+1
+    inds = torch.cat((torch.tensor([0], device=torch.device('cuda'), dtype=torch.long), inds))
+    tmpdots = dots[inds]
+    inds = torch.cat((inds, torch.tensor([len(dots)], device=torch.device('cuda'))))
+    inds = inds[1:] - inds[:-1]
+    runs = torch.cat((tmpdots, inds)).reshape((2,-1))
+    runs = torch.flatten(torch.transpose(runs, 0, 1)).cpu().data.numpy()
+    return ' '.join([str(i) for i in runs])
+
+
+'''
+# You need to upload the csv file on kaggle
+# The speed of your code in the previous parts highly affects the running time of this part
+'''
+
+preddic = {"ImageId": [], "EncodedPixels": []}
+
+'''
+# Writing the predictions of the training set
+'''
+my_data_list = DatasetCatalog.get("data_detection_{}".format('train'))
+for i in tqdm(range(len(my_data_list)), position=0, leave=True):
+  sample = my_data_list[i]
+  sample['image_id'] = sample['file_name'].split("/")[-1][:-4]
+  img, true_mask, pred_mask = get_prediction_mask(sample)
+  inds = torch.unique(pred_mask)
+  if(len(inds)==1):
+    preddic['ImageId'].append(sample['image_id'])
+    preddic['EncodedPixels'].append([])
+  else:
+    for index in inds:
+      if(index == 0):
+        continue
+      tmp_mask = (pred_mask==index)
+      encPix = rle_encoding(tmp_mask)
+      preddic['ImageId'].append(sample['image_id'])
+      preddic['EncodedPixels'].append(encPix)
+
+'''
+# Writing the predictions of the test set
+'''
+
+my_data_list = DatasetCatalog.get("data_detection_{}".format('test'))
+for i in tqdm(range(len(my_data_list)), position=0, leave=True):
+  sample = my_data_list[i]
+  sample['image_id'] = sample['file_name'].split("/")[-1][:-4]
+  img, true_mask, pred_mask = get_prediction_mask(sample)
+  inds = torch.unique(pred_mask)
+  if(len(inds)==1):
+    preddic['ImageId'].append(sample['image_id'])
+    preddic['EncodedPixels'].append([])
+  else:
+    for j, index in enumerate(inds):
+      if(index == 0):
+        continue
+      tmp_mask = (pred_mask==index).double()
+      encPix = rle_encoding(tmp_mask)
+      preddic['ImageId'].append(sample['image_id'])
+      preddic['EncodedPixels'].append(encPix)
+
+pred_file = open("{}/pred.csv".format(BASE_DIR), 'w')
+pd.DataFrame(preddic).to_csv(pred_file, index=False)
+pred_file.close()
+
+
+
+
+
