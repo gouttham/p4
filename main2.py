@@ -549,7 +549,7 @@ def get_prediction_mask(data, prepared_imageset):
     # Predictions
     loader, _ = get_prediction_dataset("prediction", sample, prepared_imageset, batch_size=8)
     pred_data = []
-    for img, _ in tqdm(loader):
+    for img, _ in loader:
         with torch.no_grad():
             preds = nn.Sigmoid()(model(img.cuda()))
             pred_data.extend((pred.squeeze().cpu().numpy() >= 0.4).astype(int) for pred in preds)
@@ -569,101 +569,19 @@ def combine_predictions_with_gt(data, pred_data, height, width):
         gt[y : y + h, x : x + w] = np.where(resized_pred > 0.5, idx + 1, gt[y : y + h, x : x + w])
     return pred_data, gt
 
-
 def get_prediction_test(data, prepared_imageset):
-    original_img = Image.open(data["file_name"])
-    filename = data["file_name"]
-    sample = []
-    print(data["file_name"])
+    img, gt_mask, pred_mask = get_prediction_mask(data, prepared_imageset)
     for name in prepared_imageset:
         if name["file_name"] == data["file_name"]:
-            sample.append(name)
-            for instance in name:
-                instance_sample = name
-
-    print(len(instance_sample["annotations"]))
-
-    # plt.imshow(instance_sample["annotations"][0]["obj_img"], cmap='gray')
-    # plt.figure()
-    width = data["width"]
-    height = data["height"]
-
-    gt_mask = None
-
-    pred_data = []
-    batch_size = 8
-    model = MyModel().cuda()
-    model.load_state_dict(torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR)))
-    model = model.eval()  # chaning the model to evaluation mode will fix the bachnorm layers
-
-    loader, dataset = get_prediction_dataset("prediction", sample, prepared_imageset, batch_size)
-
-    for (img, mask) in tqdm(loader):
-
-        with torch.no_grad():
-            img = img.cuda()
-            # mask = mask.cuda()
-            # mask = torch.unsqueeze(mask,1)
-            pred = model(img)
-            m = nn.Sigmoid()
-            batch_size = pred.shape
-            batch_size = batch_size[0]
-        for batch in range(batch_size):
-
-            # print(batch)
-            pred_mk = pred[batch].cpu()
-            pred_mk = m(pred_mk)
-            pred_mk = pred_mk.numpy()
-            pred_mk = np.squeeze(pred_mk, 0)
-            # print(pred_mk.shape)
-            for i in pred_mk:
-                i[i < 0.4] = 0
-                i[i >= 0.4] = 1
-            pred_data.append(pred_mk)
-
-        for s in prepared_imageset:
-            if s["file_name"] == data["file_name"]:
-                for i in range(len(pred_data)):
-                    s["annotations"][i]["obj_mask"] = pred_data[i]
-        # plt.imshow(pred_data[5], cmap='gray')
-
-        # plt.figure()
-
-    pred_mask = pred_data
-    # print(len(pred_data))
-    # print(height, width)
-    gt = np.zeros((height, width))
-
-    for i in range(len(pred_data)):
-
-        row_count = 0
-        # print(i)
-        sample_width = int(instance_sample["annotations"][i]["bbox"][3])
-        sample_height = int(instance_sample["annotations"][i]["bbox"][2])
-        sample_x = int(instance_sample["annotations"][i]["bbox"][0])
-        sample_y = int(instance_sample["annotations"][i]["bbox"][1])
-        pred_data[i] = cv2.resize(pred_data[i], (sample_height - sample_x, sample_width - sample_y))
-
-        for y in pred_data[i]:
-            count = 0
-            # print(len(y))
-            for x in y:
-                if (x > 0.5):
-                    # print(row_count,count)
-                    # print(sample_y,sample_x)
-                    # print(row_count+sample_y,count+sample_x)
-                    gt[row_count + sample_y, count + sample_x] = i + 1
-
-                count += 1
-
-            row_count += 1
-
-    # img = torch.from_numpy(img)
-
-    gt_mask = gt
-    gt = torch.from_numpy(gt)
-    gt = gt.cuda()
-    return original_img, gt_mask, gt
+            num_annotations = len(name["annotations"])
+            num_preds = len(pred_mask)
+            # Adjust annotation length if needed
+            if num_preds > num_annotations:
+                name["annotations"].extend([{"obj_mask": None} for _ in range(num_preds - num_annotations)])
+            # Assign predictions
+            for idx, pred in enumerate(pred_mask):
+                name["annotations"][idx]["obj_mask"] = pred
+    return img, gt_mask, pred_mask
 
 
 '''
