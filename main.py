@@ -117,9 +117,10 @@ print(len(val_data))
 print(len(test_data))
 
 
-TRAIN_DETECTION = False
+TRAIN_DETECTION = True
+EVAL_DETECTION = True
+
 TRAIN_SEGMENTATION = False
-EVAL_DETECTION = False
 EVAL_SEGMENTATION = False
 
 def normalize_image(img):
@@ -172,7 +173,7 @@ cfg = get_cfg()
 cfg.OUTPUT_DIR = "{}/output/".format(BASE_DIR)
 cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml"))
 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml")
-cfg.SOLVER.MAX_ITER = 5000
+cfg.SOLVER.MAX_ITER = 10000
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512
 cfg.SOLVER.IMS_PER_BATCH = 2
 cfg.SOLVER.BASE_LR = 0.00025
