@@ -543,7 +543,7 @@ def get_prediction_mask(data, prepared_imageset):
 
     # Load model
     model = MyModel().cuda()
-    model.load_state_dict(torch.load(f"{BASE_DIR}/output/final_segmentation_model.pth"))
+    model.load_state_dict(torch.load(f"{BASE_DIR}/output_v3/final_segmentation_model.pth"))
     model.eval()
 
     # Predictions
