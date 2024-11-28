@@ -565,6 +565,8 @@ def combine_predictions_with_gt(data, pred_data, height, width):
         if idx >= len(data["annotations"]):  # Skip extra predictions
             break
         x, y, w, h = map(int, data["annotations"][idx]["bbox"])
+        import pdb
+        pdb.set_trace()
         resized_pred = cv2.resize(pred, (w, h))
         gt[y : y + h, x : x + w] = np.where(resized_pred > 0.5, idx + 1, gt[y : y + h, x : x + w])
     return pred_data, gt
