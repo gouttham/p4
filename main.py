@@ -118,7 +118,7 @@ print(len(test_data))
 
 
 TRAIN_DETECTION = False
-EVAL_DETECTION = False
+EVAL_DETECTION = True
 
 TRAIN_SEGMENTATION = False
 EVAL_SEGMENTATION = False
