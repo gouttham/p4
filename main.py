@@ -243,13 +243,15 @@ if TRAIN_DETECTION:
 
 
 
-cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
-# cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final_51.pth")
-print("cfg.MODEL.WEIGHTS" , cfg.MODEL.WEIGHTS)
-cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
-predictor = DefaultPredictor(cfg)
+
 
 if EVAL_DETECTION:
+    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
+    # cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final_51.pth")
+    print("cfg.MODEL.WEIGHTS", cfg.MODEL.WEIGHTS)
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
+    predictor = DefaultPredictor(cfg)
+
     evaluator = COCOEvaluator("data_detection_train", tasks=cfg, distributed=False, output_dir=cfg.OUTPUT_DIR)
     val_loader = build_detection_test_loader(cfg, "data_detection_train")
     print(inference_on_dataset(predictor.model, val_loader, evaluator))
