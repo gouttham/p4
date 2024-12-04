@@ -325,7 +325,7 @@ class PlaneDataset(Dataset):
   def numpy_to_tensor(self, img, mask):
     if self.tran is not None:
         if self.is_aug:
-            if random.random() > 0.35:  # Augment only 35% of the training data
+            if random.random() > 0.50:  # Augment only 35% of the training data
                 if random.random() > 0.5:
                     img = cv2.flip(img, 1)
                     mask = cv2.flip(mask, 1)
