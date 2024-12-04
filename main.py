@@ -243,8 +243,8 @@ if TRAIN_DETECTION:
 
 
 
-# cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
-cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final_51.pth")
+cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
+# cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final_51.pth")
 print("cfg.MODEL.WEIGHTS" , cfg.MODEL.WEIGHTS)
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
 predictor = DefaultPredictor(cfg)
