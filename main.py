@@ -118,10 +118,10 @@ print(len(test_data))
 
 
 TRAIN_DETECTION = False
-EVAL_DETECTION = True
+EVAL_DETECTION = False
 
-TRAIN_SEGMENTATION = False
-EVAL_SEGMENTATION = False
+TRAIN_SEGMENTATION = True
+EVAL_SEGMENTATION = True
 
 def normalize_image(img):
     img = img.to(dtype=torch.float32)
