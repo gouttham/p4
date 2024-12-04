@@ -251,7 +251,7 @@ predictor = DefaultPredictor(cfg)
 
 if EVAL_DETECTION:
     evaluator = COCOEvaluator("data_detection_train", tasks=cfg, distributed=False, output_dir=cfg.OUTPUT_DIR)
-    val_loader = build_detection_test_loader(cfg, "data_detection_train")
+    val_loader = build_detection_test_loader(cfg, "data_detection_test")
     print(inference_on_dataset(predictor.model, val_loader, evaluator))
 
 
