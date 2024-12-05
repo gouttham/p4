@@ -766,7 +766,7 @@ if GEN_CSV:
 
 cfg = get_cfg()
 cfg.OUTPUT_DIR = "{}/output/".format(BASE_DIR)
-cfg.SOLVER.MAX_ITER = 10000
+cfg.SOLVER.MAX_ITER = 5000
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512
 cfg.DATALOADER.NUM_WORKERS = 4
 
