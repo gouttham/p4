@@ -124,6 +124,7 @@ TRAIN_SEGMENTATION = False
 EVAL_SEGMENTATION = False
 
 GEN_CSV = False
+RCNN_TRAIN = False
 
 def normalize_image(img):
     img = img.to(dtype=torch.float32)
@@ -782,15 +783,16 @@ cfg.DATASETS.TEST = ("data_detection_test",)
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 trainer = DefaultTrainer(cfg)
 
+if RCNN_TRAIN:
+    trainer.resume_or_load(resume=False)   #default False, ensures loading from cfg.MODEL.WEIGHTS
+    trainer.train()
 
-trainer.resume_or_load(resume=False)   #default False, ensures loading from cfg.MODEL.WEIGHTS
-trainer.train()
 
 
-# cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "../output/model_final.pth")
-# print("cfg.MODEL.WEIGHTS", cfg.MODEL.WEIGHTS)
-# cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
-# predictor = DefaultPredictor(cfg)
+cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
+print("cfg.MODEL.WEIGHTS", cfg.MODEL.WEIGHTS)
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
+predictor = DefaultPredictor(cfg)
 
 evaluator = COCOEvaluator("data_detection_train", tasks=cfg, distributed=False, output_dir= cfg.OUTPUT_DIR)
 val_loader = build_detection_test_loader(cfg, "data_detection_train")
