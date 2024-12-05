@@ -123,6 +123,8 @@ EVAL_DETECTION = False
 TRAIN_SEGMENTATION = True
 EVAL_SEGMENTATION = True
 
+GEN_CSV = False
+
 def normalize_image(img):
     img = img.to(dtype=torch.float32)
     min_val = img.min()
@@ -241,13 +243,11 @@ if TRAIN_DETECTION:
     trainer.train()
 
 cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "../final_models/model_final.pth")
-# cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final_51.pth")
 print("cfg.MODEL.WEIGHTS", cfg.MODEL.WEIGHTS)
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
 predictor = DefaultPredictor(cfg)
 
 if EVAL_DETECTION:
-
 
     evaluator = COCOEvaluator("data_detection_train", tasks=cfg, distributed=False, output_dir=cfg.OUTPUT_DIR)
     val_loader = build_detection_test_loader(cfg, "data_detection_train")
@@ -739,28 +739,66 @@ for i in tqdm(range(len(my_data_list)), position=0, leave=True):
 '''
 # Writing the predictions of the test set
 '''
+if GEN_CSV:
+    my_data_list = DatasetCatalog.get("data_detection_{}".format('test'))
+    for i in tqdm(range(len(my_data_list)), position=0, leave=True):
+      sample = my_data_list[i]
+      sample['image_id'] = sample['file_name'].split("/")[-1][:-4]
+      img, true_mask, pred_mask = get_prediction_mask(sample)
+      inds = torch.unique(pred_mask)
+      if(len(inds)==1):
+        preddic['ImageId'].append(sample['image_id'])
+        preddic['EncodedPixels'].append([])
+      else:
+        for j, index in enumerate(inds):
+          if(index == 0):
+            continue
+          tmp_mask = (pred_mask==index).double()
+          encPix = rle_encoding(tmp_mask)
+          preddic['ImageId'].append(sample['image_id'])
+          preddic['EncodedPixels'].append(encPix)
 
-my_data_list = DatasetCatalog.get("data_detection_{}".format('test'))
-for i in tqdm(range(len(my_data_list)), position=0, leave=True):
-  sample = my_data_list[i]
-  sample['image_id'] = sample['file_name'].split("/")[-1][:-4]
-  img, true_mask, pred_mask = get_prediction_mask(sample)
-  inds = torch.unique(pred_mask)
-  if(len(inds)==1):
-    preddic['ImageId'].append(sample['image_id'])
-    preddic['EncodedPixels'].append([])
-  else:
-    for j, index in enumerate(inds):
-      if(index == 0):
-        continue
-      tmp_mask = (pred_mask==index).double()
-      encPix = rle_encoding(tmp_mask)
-      preddic['ImageId'].append(sample['image_id'])
-      preddic['EncodedPixels'].append(encPix)
+    pred_file = open("{}/pred.csv".format(BASE_DIR), 'w')
+    pd.DataFrame(preddic).to_csv(pred_file, index=False)
+    pred_file.close()
 
-pred_file = open("{}/pred.csv".format(BASE_DIR), 'w')
-pd.DataFrame(preddic).to_csv(pred_file, index=False)
-pred_file.close()
+
+
+cfg = get_cfg()
+cfg.OUTPUT_DIR = "{}/output/".format(BASE_DIR)
+cfg.SOLVER.MAX_ITER = 10000
+cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512
+cfg.DATALOADER.NUM_WORKERS = 4
+
+cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"))
+cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
+
+cfg.SOLVER.IMS_PER_BATCH = 2
+cfg.SOLVER.BASE_LR = 0.00025
+cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
+cfg.DATASETS.TRAIN = ("data_detection_train",)
+cfg.DATASETS.TEST = ("data_detection_test",)
+
+os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
+trainer = DefaultTrainer(cfg)
+
+
+trainer.resume_or_load(resume=False)   #default False, ensures loading from cfg.MODEL.WEIGHTS
+trainer.train()
+
+
+# cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "../output/model_final.pth")
+# print("cfg.MODEL.WEIGHTS", cfg.MODEL.WEIGHTS)
+# cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
+# predictor = DefaultPredictor(cfg)
+
+evaluator = COCOEvaluator("data_detection_train", tasks=cfg, distributed=False, output_dir= cfg.OUTPUT_DIR)
+val_loader = build_detection_test_loader(cfg, "data_detection_train")
+print(inference_on_dataset(trainer.model, val_loader, evaluator))
+
+
+
+
 
 
 
