@@ -629,7 +629,7 @@ if EVAL_SEGMENTATION:
 
 
 
-model = get_seg_model()
+# model = get_seg_model()
 
 
 
