@@ -502,7 +502,7 @@ class MyModel(nn.Module):
 
 # Training
 # Set the hyperparameters
-num_epochs = 2
+num_epochs = 3
 batch_size = 2
 learning_rate = 1e-3
 weight_decay = 1e-5
