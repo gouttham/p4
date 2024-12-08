@@ -239,13 +239,18 @@ trainer = CustomTrainer(cfg)
 
 # for name, param in trainer.model.named_parameters():
 #     print(f"Layer: {name}, Requires Grad: {param.requires_grad}")
+from detectron2.checkpoint import DetectionCheckpointer
+
 
 if TRAIN_DETECTION:
     print("*************")
     print(cfg.MODEL.WEIGHTS)
     print("*************")
-    trainer.model.load(cfg.MODEL.WEIGHTS)
-    # trainer.resume_or_load(load=True)
+    model = trainer.build_model(cfg)
+    checkpointer = DetectionCheckpointer(model)
+    checkpointer.load(cfg.MODEL.WEIGHTS)
+
+    # trainer.resume_or_load(resume=True)
     trainer.train()
 
 cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "../output/model_final.pth")
