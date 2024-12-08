@@ -244,7 +244,8 @@ if TRAIN_DETECTION:
     print("*************")
     print(cfg.MODEL.WEIGHTS)
     print("*************")
-    trainer.resume_or_load(load=True)
+    trainer.model.load(cfg.MODEL.WEIGHTS)
+    # trainer.resume_or_load(load=True)
     trainer.train()
 
 cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "../output/model_final.pth")
