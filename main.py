@@ -241,10 +241,10 @@ trainer = CustomTrainer(cfg)
 #     print(f"Layer: {name}, Requires Grad: {param.requires_grad}")
 
 if TRAIN_DETECTION:
-    trainer.resume_or_load(resume=False)
+    trainer.resume_or_load(resume=True)
     trainer.train()
 
-cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "../final_models/model_final.pth")
+cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "../output/model_final.pth")
 print("cfg.MODEL.WEIGHTS", cfg.MODEL.WEIGHTS)
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
 predictor = DefaultPredictor(cfg)
