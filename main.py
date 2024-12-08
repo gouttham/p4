@@ -558,7 +558,8 @@ if TRAIN_SEGMENTATION:
 
 
 batch_size = 8
-model = get_seg_model('{}/output/final_segmentation_model.pth'.format(BASE_DIR))
+# '{}/output/final_segmentation_model.pth'.format(BASE_DIR)
+model = get_seg_model()
 
 model = model.eval()  # chaning the model to evaluation mode will fix the bachnorm layers
 loader, dataset = get_plane_dataset('train', batch_size)
