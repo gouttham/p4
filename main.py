@@ -120,7 +120,7 @@ def get_detection_data(set_name):
 TRAIN_DETECTION = False
 EVAL_DETECTION = False
 
-TRAIN_SEGMENTATION = True
+TRAIN_SEGMENTATION = False
 EVAL_SEGMENTATION = True
 
 GEN_CSV = True
@@ -558,7 +558,7 @@ if TRAIN_SEGMENTATION:
 
 
 batch_size = 8
-model = get_seg_model()
+model = get_seg_model('{}/output/final_segmentation_model.pth'.format(BASE_DIR))
 
 model = model.eval()  # chaning the model to evaluation mode will fix the bachnorm layers
 loader, dataset = get_plane_dataset('train', batch_size)
@@ -729,23 +729,7 @@ preddic = {"ImageId": [], "EncodedPixels": []}
 '''
 # Writing the predictions of the training set
 '''
-# my_data_list = DatasetCatalog.get("data_detection_{}".format('train'))
-# for i in tqdm(range(len(my_data_list)), position=0, leave=True):
-#   sample = my_data_list[i]
-#   sample['image_id'] = sample['file_name'].split("/")[-1][:-4]
-#   img, true_mask, pred_mask = get_prediction_mask(sample)
-#   inds = torch.unique(pred_mask)
-#   if(len(inds)==1):
-#     preddic['ImageId'].append(sample['image_id'])
-#     preddic['EncodedPixels'].append([])
-#   else:
-#     for index in inds:
-#       if(index == 0):
-#         continue
-#       tmp_mask = (pred_mask==index)
-#       encPix = rle_encoding(tmp_mask)
-#       preddic['ImageId'].append(sample['image_id'])
-#       preddic['EncodedPixels'].append(encPix)
+
 
 '''
 # Writing the predictions of the test set
@@ -778,8 +762,25 @@ if GEN_CSV:
     validation_metadata = MetadataCatalog.get("data_detection_validation")
     test_metadata = MetadataCatalog.get("data_detection_test")
 
-
     my_data_list = DatasetCatalog.get("data_detection_{}".format('train'))
+    for i in tqdm(range(len(my_data_list)), position=0, leave=True):
+      sample = my_data_list[i]
+      sample['image_id'] = sample['file_name'].split("/")[-1][:-4]
+      img, true_mask, pred_mask = get_prediction_mask(sample)
+      inds = torch.unique(pred_mask)
+      if(len(inds)==1):
+        preddic['ImageId'].append(sample['image_id'])
+        preddic['EncodedPixels'].append([])
+      else:
+        for index in inds:
+          if(index == 0):
+            continue
+          tmp_mask = (pred_mask==index)
+          encPix = rle_encoding(tmp_mask)
+          preddic['ImageId'].append(sample['image_id'])
+          preddic['EncodedPixels'].append(encPix)
+
+    my_data_list = DatasetCatalog.get("data_detection_{}".format('test'))
     for i in tqdm(range(len(my_data_list)), position=0, leave=True):
       sample = my_data_list[i]
       sample['image_id'] = sample['file_name'].split("/")[-1][:-4]
