@@ -507,8 +507,16 @@ batch_size = 2
 learning_rate = 1e-3
 weight_decay = 1e-5
 
+
 model = MyModel() # initialize the model
 model = model.cuda() # move the model to GPU
+
+
+learning_rate = 1e-5
+wt = torch.load('{}/output_v3/final_segmentation_model.pth'.format(BASE_DIR))
+model.load_state_dict(wt)
+
+
 loader, _ = get_plane_dataset('train', batch_size, False) # initialize data_loader
 crit = nn.BCEWithLogitsLoss() # Define the loss function
 optim = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay) # Initialize the optimizer as SGD
@@ -525,9 +533,8 @@ best_loss = 100
 # start the training procedure
 if TRAIN_SEGMENTATION:
 
-    wt = torch.load('{}/output_v3/final_segmentation_model.pth'.format(BASE_DIR))
-    model.load_state_dict(wt)
-    learning_rate = 1e-5
+
+
 
     for epoch in range(num_epochs):
       cur_lr = get_lr(optim)
