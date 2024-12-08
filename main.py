@@ -117,7 +117,7 @@ def get_detection_data(set_name):
 # print(len(test_data))
 
 
-TRAIN_DETECTION = True
+TRAIN_DETECTION = False
 EVAL_DETECTION = True
 
 TRAIN_SEGMENTATION = False
@@ -729,29 +729,29 @@ preddic = {"ImageId": [], "EncodedPixels": []}
 '''
 # Writing the predictions of the training set
 '''
-my_data_list = DatasetCatalog.get("data_detection_{}".format('train'))
-for i in tqdm(range(len(my_data_list)), position=0, leave=True):
-  sample = my_data_list[i]
-  sample['image_id'] = sample['file_name'].split("/")[-1][:-4]
-  img, true_mask, pred_mask = get_prediction_mask(sample)
-  inds = torch.unique(pred_mask)
-  if(len(inds)==1):
-    preddic['ImageId'].append(sample['image_id'])
-    preddic['EncodedPixels'].append([])
-  else:
-    for index in inds:
-      if(index == 0):
-        continue
-      tmp_mask = (pred_mask==index)
-      encPix = rle_encoding(tmp_mask)
-      preddic['ImageId'].append(sample['image_id'])
-      preddic['EncodedPixels'].append(encPix)
+# my_data_list = DatasetCatalog.get("data_detection_{}".format('train'))
+# for i in tqdm(range(len(my_data_list)), position=0, leave=True):
+#   sample = my_data_list[i]
+#   sample['image_id'] = sample['file_name'].split("/")[-1][:-4]
+#   img, true_mask, pred_mask = get_prediction_mask(sample)
+#   inds = torch.unique(pred_mask)
+#   if(len(inds)==1):
+#     preddic['ImageId'].append(sample['image_id'])
+#     preddic['EncodedPixels'].append([])
+#   else:
+#     for index in inds:
+#       if(index == 0):
+#         continue
+#       tmp_mask = (pred_mask==index)
+#       encPix = rle_encoding(tmp_mask)
+#       preddic['ImageId'].append(sample['image_id'])
+#       preddic['EncodedPixels'].append(encPix)
 
 '''
 # Writing the predictions of the test set
 '''
 if GEN_CSV:
-    my_data_list = DatasetCatalog.get("data_detection_{}".format('test'))
+    my_data_list = DatasetCatalog.get("data_detection_{}".format('train'))
     for i in tqdm(range(len(my_data_list)), position=0, leave=True):
       sample = my_data_list[i]
       sample['image_id'] = sample['file_name'].split("/")[-1][:-4]
