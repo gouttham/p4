@@ -524,6 +524,11 @@ loss_ctr =0
 best_loss = 100
 # start the training procedure
 if TRAIN_SEGMENTATION:
+
+    wt = torch.load('{}/output_v3/final_segmentation_model.pth'.format(BASE_DIR))
+    model.load_state_dict(wt)
+    learning_rate = 1e-5
+
     for epoch in range(num_epochs):
       cur_lr = get_lr(optim)
       print("Epoch: {}, cur_lr: {}".format(epoch, cur_lr))
