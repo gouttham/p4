@@ -54,7 +54,7 @@ BASE_DIR = '/localscratch/gna23/p4/CMPT_CV_lab4/'
 def get_detection_data(set_name):
     img_base_dir = f'{BASE_DIR}/data/{set_name}'
 
-    if set_name == "train":
+    if set_name != "test":
         data_dirs = f'{BASE_DIR}/data/{set_name}.json'
         annotations = json.load(open(data_dirs))
         file_data = {}
@@ -108,23 +108,24 @@ def get_detection_data(set_name):
             test_data.append(record)
         return test_data
 
-train_data,val_data = get_detection_data("train")
-test_data = get_detection_data("test")
+# train_data,val_data = get_detection_data("train")
+# test_data = get_detection_data("test")
 
 
-print(len(train_data))
-print(len(val_data))
-print(len(test_data))
+# print(len(train_data))
+# print(len(val_data))
+# print(len(test_data))
 
 
-TRAIN_DETECTION = False
-EVAL_DETECTION = False
+TRAIN_DETECTION = True
+EVAL_DETECTION = True
 
 TRAIN_SEGMENTATION = False
 EVAL_SEGMENTATION = False
 
-GEN_CSV = False
+GEN_CSV = True
 RCNN_TRAIN = False
+RCNN_EVAL = False
 
 def normalize_image(img):
     img = img.to(dtype=torch.float32)
@@ -155,8 +156,8 @@ def get_seg_model(pth='{}/output_v3/final_segmentation_model.pth'.format(BASE_DI
 # DatasetCatalog.remove('data_detection_test')
 # MetadataCatalog.remove('data_detection_test')
 
-for sel in ["train","test"]:
-    if sel == "train":
+for sel in ["merge","test"]:
+    if sel == "merge":
         temp_train, temp_validation = get_detection_data(sel)
         DatasetCatalog.register("data_detection_train", lambda sel=sel: temp_train)
         MetadataCatalog.get("data_detection_train").set(thing_classes=["plane"])
@@ -788,15 +789,15 @@ if RCNN_TRAIN:
     trainer.train()
 
 
+if RCNN_EVAL:
+    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "mrcnn_model_final.pth")
+    print("cfg.MODEL.WEIGHTS", cfg.MODEL.WEIGHTS)
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
+    predictor = DefaultPredictor(cfg)
 
-cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "mrcnn_model_final.pth")
-print("cfg.MODEL.WEIGHTS", cfg.MODEL.WEIGHTS)
-cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
-predictor = DefaultPredictor(cfg)
-
-evaluator = COCOEvaluator("data_detection_train", tasks=cfg, distributed=False, output_dir= cfg.OUTPUT_DIR)
-val_loader = build_detection_test_loader(cfg, "data_detection_train")
-print(inference_on_dataset(predictor.model, val_loader, evaluator))
+    evaluator = COCOEvaluator("data_detection_train", tasks=cfg, distributed=False, output_dir= cfg.OUTPUT_DIR)
+    val_loader = build_detection_test_loader(cfg, "data_detection_train")
+    print(inference_on_dataset(predictor.model, val_loader, evaluator))
 
 
 
