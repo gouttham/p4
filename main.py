@@ -250,7 +250,7 @@ if TRAIN_DETECTION:
     checkpointer = DetectionCheckpointer(model)
     checkpointer.load(cfg.MODEL.WEIGHTS)
 
-    # trainer.resume_or_load(resume=True)
+    trainer.resume_or_load(resume=False)
     trainer.train()
 
 cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "../output/model_final.pth")
