@@ -751,6 +751,34 @@ preddic = {"ImageId": [], "EncodedPixels": []}
 # Writing the predictions of the test set
 '''
 if GEN_CSV:
+
+    DatasetCatalog.remove('data_detection_train')
+    MetadataCatalog.remove('data_detection_train')
+    #
+    DatasetCatalog.remove('data_detection_validation')
+    MetadataCatalog.remove('data_detection_validation')
+    #
+    #
+    DatasetCatalog.remove('data_detection_test')
+    MetadataCatalog.remove('data_detection_test')
+
+    for sel in ["train", "test"]:
+        if sel == "train":
+            temp_train, temp_validation = get_detection_data(sel)
+            DatasetCatalog.register("data_detection_train", lambda sel=sel: temp_train)
+            MetadataCatalog.get("data_detection_train").set(thing_classes=["plane"])
+
+            DatasetCatalog.register("data_detection_validation", lambda sel=sel: temp_validation)
+            MetadataCatalog.get("data_detection_validation").set(thing_classes=["plane"])
+        else:
+            DatasetCatalog.register("data_detection_" + sel, lambda sel=sel: get_detection_data(sel))
+            MetadataCatalog.get("data_detection_" + sel).set(thing_classes=["plane"])
+
+    train_metadata = MetadataCatalog.get("data_detection_train")
+    validation_metadata = MetadataCatalog.get("data_detection_validation")
+    test_metadata = MetadataCatalog.get("data_detection_test")
+
+
     my_data_list = DatasetCatalog.get("data_detection_{}".format('train'))
     for i in tqdm(range(len(my_data_list)), position=0, leave=True):
       sample = my_data_list[i]
