@@ -512,7 +512,7 @@ model = MyModel() # initialize the model
 model = model.cuda() # move the model to GPU
 
 
-learning_rate = 1e-5
+learning_rate = 1e-6
 wt = torch.load('{}/output_v3/final_segmentation_model.pth'.format(BASE_DIR))
 model.load_state_dict(wt)
 
