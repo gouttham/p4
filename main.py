@@ -375,10 +375,10 @@ class PlaneDataset(Dataset):
 
     return img, mask
 
-def get_plane_dataset(set_name='train', batch_size=2,is_aug=False):
+def get_plane_dataset(set_name='train', batch_size=20,is_aug=False):
     my_data_list = DatasetCatalog.get("data_detection_{}".format(set_name))
     dataset = PlaneDataset(set_name, my_data_list,is_aug)
-    loader = DataLoader(dataset, batch_size=batch_size, num_workers=4,
+    loader = DataLoader(dataset, batch_size=batch_size, num_workers=12,
                                               pin_memory=True, shuffle=True)
     return loader, dataset
 
