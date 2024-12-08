@@ -241,6 +241,9 @@ trainer = CustomTrainer(cfg)
 #     print(f"Layer: {name}, Requires Grad: {param.requires_grad}")
 
 if TRAIN_DETECTION:
+    print("*************")
+    print(cfg.MODEL.WEIGHTS)
+    print("*************")
     trainer.resume_or_load(resume=True)
     trainer.train()
 
