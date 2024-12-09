@@ -120,8 +120,8 @@ def get_detection_data(set_name):
 TRAIN_DETECTION = False
 EVAL_DETECTION = False
 
-TRAIN_SEGMENTATION = True
-EVAL_SEGMENTATION = True
+TRAIN_SEGMENTATION = False
+EVAL_SEGMENTATION = False
 
 GEN_CSV = True
 RCNN_TRAIN = False
