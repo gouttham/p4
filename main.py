@@ -120,7 +120,7 @@ def get_detection_data(set_name):
 TRAIN_DETECTION = False
 EVAL_DETECTION = False
 
-TRAIN_SEGMENTATION = False
+TRAIN_SEGMENTATION = True
 EVAL_SEGMENTATION = True
 
 GEN_CSV = True
@@ -502,7 +502,7 @@ class MyModel(nn.Module):
 
 # Training
 # Set the hyperparameters
-num_epochs = 5
+num_epochs = 50
 batch_size = 2
 learning_rate = 1e-3
 weight_decay = 1e-5
@@ -512,7 +512,7 @@ model = MyModel() # initialize the model
 model = model.cuda() # move the model to GPU
 
 
-learning_rate = 0.5e-3
+learning_rate = 1e-3
 wt = torch.load('{}/output/final_segmentation_model.pth'.format(BASE_DIR))
 # wt = torch.load('{}/output_v3/final_segmentation_model.pth'.format(BASE_DIR))
 model.load_state_dict(wt)
