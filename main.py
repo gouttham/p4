@@ -120,7 +120,7 @@ def get_detection_data(set_name):
 TRAIN_DETECTION = False
 EVAL_DETECTION = False
 
-TRAIN_SEGMENTATION = True
+TRAIN_SEGMENTATION = False
 EVAL_SEGMENTATION = True
 
 GEN_CSV = True
@@ -572,7 +572,7 @@ if TRAIN_SEGMENTATION:
 
 batch_size = 8
 #
-model = get_seg_model('{}/output_v3/final_segmentation_model.pth'.format(BASE_DIR))
+model = get_seg_model('{}/output/final_segmentation_model.pth'.format(BASE_DIR))
 
 model = model.eval()  # chaning the model to evaluation mode will fix the bachnorm layers
 loader, dataset = get_plane_dataset('train', batch_size)
