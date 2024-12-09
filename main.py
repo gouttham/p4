@@ -750,31 +750,31 @@ preddic = {"ImageId": [], "EncodedPixels": []}
 '''
 if GEN_CSV:
 
-    DatasetCatalog.remove('data_detection_train')
-    MetadataCatalog.remove('data_detection_train')
+    # DatasetCatalog.remove('data_detection_train')
+    # MetadataCatalog.remove('data_detection_train')
+    # #
+    # DatasetCatalog.remove('data_detection_validation')
+    # MetadataCatalog.remove('data_detection_validation')
+    # #
+    # #
+    # DatasetCatalog.remove('data_detection_test')
+    # MetadataCatalog.remove('data_detection_test')
     #
-    DatasetCatalog.remove('data_detection_validation')
-    MetadataCatalog.remove('data_detection_validation')
+    # for sel in ["train", "test"]:
+    #     if sel == "train":
+    #         temp_train, temp_validation = get_detection_data(sel)
+    #         DatasetCatalog.register("data_detection_train", lambda sel=sel: temp_train)
+    #         MetadataCatalog.get("data_detection_train").set(thing_classes=["plane"])
     #
+    #         DatasetCatalog.register("data_detection_validation", lambda sel=sel: temp_validation)
+    #         MetadataCatalog.get("data_detection_validation").set(thing_classes=["plane"])
+    #     else:
+    #         DatasetCatalog.register("data_detection_" + sel, lambda sel=sel: get_detection_data(sel))
+    #         MetadataCatalog.get("data_detection_" + sel).set(thing_classes=["plane"])
     #
-    DatasetCatalog.remove('data_detection_test')
-    MetadataCatalog.remove('data_detection_test')
-
-    for sel in ["train", "test"]:
-        if sel == "train":
-            temp_train, temp_validation = get_detection_data(sel)
-            DatasetCatalog.register("data_detection_train", lambda sel=sel: temp_train)
-            MetadataCatalog.get("data_detection_train").set(thing_classes=["plane"])
-
-            DatasetCatalog.register("data_detection_validation", lambda sel=sel: temp_validation)
-            MetadataCatalog.get("data_detection_validation").set(thing_classes=["plane"])
-        else:
-            DatasetCatalog.register("data_detection_" + sel, lambda sel=sel: get_detection_data(sel))
-            MetadataCatalog.get("data_detection_" + sel).set(thing_classes=["plane"])
-
-    train_metadata = MetadataCatalog.get("data_detection_train")
-    validation_metadata = MetadataCatalog.get("data_detection_validation")
-    test_metadata = MetadataCatalog.get("data_detection_test")
+    # train_metadata = MetadataCatalog.get("data_detection_train")
+    # validation_metadata = MetadataCatalog.get("data_detection_validation")
+    # test_metadata = MetadataCatalog.get("data_detection_test")
 
     my_data_list = DatasetCatalog.get("data_detection_{}".format('train'))
     for i in tqdm(range(len(my_data_list)), position=0, leave=True):
@@ -794,23 +794,23 @@ if GEN_CSV:
           preddic['ImageId'].append(sample['image_id'])
           preddic['EncodedPixels'].append(encPix)
 
-    my_data_list = DatasetCatalog.get("data_detection_{}".format('test'))
-    for i in tqdm(range(len(my_data_list)), position=0, leave=True):
-      sample = my_data_list[i]
-      sample['image_id'] = sample['file_name'].split("/")[-1][:-4]
-      img, true_mask, pred_mask = get_prediction_mask(sample)
-      inds = torch.unique(pred_mask)
-      if(len(inds)==1):
-        preddic['ImageId'].append(sample['image_id'])
-        preddic['EncodedPixels'].append([])
-      else:
-        for j, index in enumerate(inds):
-          if(index == 0):
-            continue
-          tmp_mask = (pred_mask==index).double()
-          encPix = rle_encoding(tmp_mask)
-          preddic['ImageId'].append(sample['image_id'])
-          preddic['EncodedPixels'].append(encPix)
+    # my_data_list = DatasetCatalog.get("data_detection_{}".format('test'))
+    # for i in tqdm(range(len(my_data_list)), position=0, leave=True):
+    #   sample = my_data_list[i]
+    #   sample['image_id'] = sample['file_name'].split("/")[-1][:-4]
+    #   img, true_mask, pred_mask = get_prediction_mask(sample)
+    #   inds = torch.unique(pred_mask)
+    #   if(len(inds)==1):
+    #     preddic['ImageId'].append(sample['image_id'])
+    #     preddic['EncodedPixels'].append([])
+    #   else:
+    #     for j, index in enumerate(inds):
+    #       if(index == 0):
+    #         continue
+    #       tmp_mask = (pred_mask==index).double()
+    #       encPix = rle_encoding(tmp_mask)
+    #       preddic['ImageId'].append(sample['image_id'])
+    #       preddic['EncodedPixels'].append(encPix)
 
     pred_file = open("{}/pred.csv".format(BASE_DIR), 'w')
     pd.DataFrame(preddic).to_csv(pred_file, index=False)
